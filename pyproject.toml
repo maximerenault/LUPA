@@ -1,0 +1,105 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "LPMS"
+version = "0.1.0"
+description = "A Lumped-Parameter Model Solver for electrical circuit simulation and analysis"
+readme = "README.md"
+license = {file = "LICENSE"}
+authors = [
+    {name = "Maxime Renault", email = "maxime.renault@example.com"}
+]
+maintainers = [
+    {name = "Maxime Renault", email = "maxime.renault@example.com"}
+]
+keywords = [
+    "circuit-simulation",
+    "electrical-engineering", 
+    "lumped-parameter",
+    "solver",
+    "gui",
+    "tkinter"
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Education",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Electronic Design Automation (EDA)",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+requires-python = ">=3.8"
+dependencies = [
+    "numpy>=1.20.0",
+    "scipy>=1.7.0",
+    "matplotlib>=3.3.0",
+    "tkinter-page",
+    "pandas>=1.2.0",
+    "networkx>=2.5",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=6.0",
+    "pytest-cov",
+    "black",
+    "flake8",
+    "mypy",
+]
+
+[project.urls]
+Homepage = "https://github.com/maximerenault/LPMS"
+Repository = "https://github.com/maximerenault/LPMS.git"
+Issues = "https://github.com/maximerenault/LPMS/issues"
+Documentation = "https://github.com/maximerenault/LPMS/blob/main/README.md"
+
+[project.scripts]
+lpms = "main:main"
+
+[project.gui-scripts]
+lpms-gui = "main:main"
+
+[tool.setuptools]
+package-dir = {"" = "."}
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["elements*", "exceptions*", "GUI*", "solvers*", "utils*", "tests*"]
+exclude = ["deprecated*"]
+
+[tool.setuptools.package-data]
+"*" = ["*.png", "*.ico", "*.json", "*.msh", "*.log"]
+
+[tool.black]
+line-length = 120
+target-version = ['py38']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+    deprecated
+)/
+'''
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "--cov=. --cov-report=html --cov-report=term-missing"
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+exclude = ["deprecated/"]

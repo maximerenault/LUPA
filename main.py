@@ -1,7 +1,8 @@
 import tkinter as tk
 from GUI.drawingboard import DrawingBoard
-import ctypes
 import os
+import sys
+import argparse
 
 
 class MainWindow(tk.Tk):
@@ -21,8 +22,14 @@ class MainWindow(tk.Tk):
         super().__init__()
         self.title("LPMS")
 
-        myappid = "LPMS.0.1.0"
-        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+        # Set app ID for Windows taskbar grouping
+        if sys.platform == "win32":
+            try:
+                import ctypes
+                myappid = "LPMS.0.1.0"
+                ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+            except ImportError:
+                pass  # ctypes not available
 
         self.rowconfigure(0, weight=1)
         self.columnconfigure(0, weight=1)
@@ -108,6 +115,52 @@ class MainWindow(tk.Tk):
         pass
 
 
+def main():
+    """Entry point for the LPMS application."""
+    parser = argparse.ArgumentParser(
+        description="LPMS - Lumped-Parameter Model Solver",
+        prog="lpms"
+    )
+    parser.add_argument(
+        "--version", 
+        action="version", 
+        version="LPMS 0.1.0"
+    )
+    parser.add_argument(
+        "file",
+        nargs="?",
+        help="Circuit file to open on startup"
+    )
+    parser.add_argument(
+        "--no-gui",
+        action="store_true",
+        help="Run in command-line mode (not yet implemented)"
+    )
+    
+    args = parser.parse_args()
+    
+    if args.no_gui:
+        print("Command-line mode not yet implemented.")
+        print("Use 'lpms' without --no-gui to start the GUI application.")
+        return
+    
+    try:
+        root = MainWindow()
+        
+        # If a file was specified, try to open it
+        if args.file:
+            if os.path.exists(args.file):
+                root.open_file(args.file)
+            else:
+                print(f"Warning: File '{args.file}' not found.")
+        
+        root.mainloop()
+    except KeyboardInterrupt:
+        print("\nApplication interrupted by user")
+    except Exception as e:
+        print(f"Error starting LPMS: {e}")
+        raise
+
+
 if __name__ == "__main__":
-    root = MainWindow()
-    root.mainloop()
+    main()
