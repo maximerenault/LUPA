@@ -8,25 +8,26 @@ import argparse
 class MainWindow(tk.Tk):
 
     ICON_PATHS = [
-        "icons/LPMS_16.png",
-        "icons/LPMS_32.png",
-        "icons/LPMS_48.png",
-        "icons/LPMS_64.png",
-        "icons/LPMS_128.png",
-        "icons/LPMS_256.png",
+        "icons/LUPA_16.png",
+        "icons/LUPA_32.png",
+        "icons/LUPA_48.png",
+        "icons/LUPA_64.png",
+        "icons/LUPA_128.png",
+        "icons/LUPA_256.png",
     ]
     RECENT_FILES_LOG = "recent_files.log"
     MAX_RECENT_FILES = 10
 
     def __init__(self) -> None:
         super().__init__()
-        self.title("LPMS")
+        self.title("LUPA")
 
         # Set app ID for Windows taskbar grouping
         if sys.platform == "win32":
             try:
                 import ctypes
-                myappid = "LPMS.0.1.0"
+
+                myappid = "LUPA.0.1.0"
                 ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
             except ImportError:
                 pass  # ctypes not available
@@ -58,9 +59,7 @@ class MainWindow(tk.Tk):
         menu_file.add_cascade(menu=menu_recent, label="Open Recent")
         for i, f in enumerate(reversed(self.recent_files)):
             accelerator = "Ctrl+o" if i == 0 else None
-            menu_recent.add_command(
-                label=os.path.basename(f), command=lambda f=f: self.open_file(f), accelerator=accelerator
-            )
+            menu_recent.add_command(label=os.path.basename(f), command=lambda f=f: self.open_file(f), accelerator=accelerator)
 
         menu_file.add_command(label="Open", command=self.open_file)
         menu_file.add_command(label="Save", command=self.save_file, accelerator="Ctrl+s")
@@ -116,49 +115,34 @@ class MainWindow(tk.Tk):
 
 
 def main():
-    """Entry point for the LPMS application."""
-    parser = argparse.ArgumentParser(
-        description="LPMS - Lumped-Parameter Model Solver",
-        prog="lpms"
-    )
-    parser.add_argument(
-        "--version", 
-        action="version", 
-        version="LPMS 0.1.0"
-    )
-    parser.add_argument(
-        "file",
-        nargs="?",
-        help="Circuit file to open on startup"
-    )
-    parser.add_argument(
-        "--no-gui",
-        action="store_true",
-        help="Run in command-line mode (not yet implemented)"
-    )
-    
+    """Entry point for the LUPA application."""
+    parser = argparse.ArgumentParser(description="LUPA - Lumped-Parameter Analysis", prog="lupa")
+    parser.add_argument("--version", action="version", version="LUPA 0.1.0")
+    parser.add_argument("file", nargs="?", help="Circuit file to open on startup")
+    parser.add_argument("--no-gui", action="store_true", help="Run in command-line mode (not yet implemented)")
+
     args = parser.parse_args()
-    
+
     if args.no_gui:
         print("Command-line mode not yet implemented.")
-        print("Use 'lpms' without --no-gui to start the GUI application.")
+        print("Use 'lupa' without --no-gui to start the GUI application.")
         return
-    
+
     try:
         root = MainWindow()
-        
+
         # If a file was specified, try to open it
         if args.file:
             if os.path.exists(args.file):
                 root.open_file(args.file)
             else:
                 print(f"Warning: File '{args.file}' not found.")
-        
+
         root.mainloop()
     except KeyboardInterrupt:
         print("\nApplication interrupted by user")
     except Exception as e:
-        print(f"Error starting LPMS: {e}")
+        print(f"Error starting LUPA: {e}")
         raise
 
 

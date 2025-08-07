@@ -1,27 +1,36 @@
-# LPMS - Lumped-Parameter Model Solver
+# LUPA – Lumped Parameter Analysis
 
 <div align="center">
-  <img src="icons/LPMS_256.png" alt="LPMS Logo" width="128" height="128">
+  <img src="icons/LUPA_256.png" alt="LUPA Logo" width="128" height="128">
   
   [![Python](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
   [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-  [![Status](https://img.shields.io/badge/status-alpha-yellow.svg)](https://github.com/maximerenault/LPMS)
+  [![Status](https://img.shields.io/badge/status-alpha-yellow.svg)](https://github.com/maximerenault/LUPA)
 </div>
 
 ## Overview
 
-LPMS (Lumped-Parameter Model Solver) is a comprehensive GUI application for electrical circuit simulation and analysis. Built with Python and Tkinter, it provides an intuitive interface for designing, analyzing, and solving lumped-parameter electrical circuits.
+LUPA is a Python-based GUI application for simulating and analyzing lumped-parameter cardiovascular circuits. Built with Python and Tkinter, it provides an intuitive interface for designing, analyzing, and solving lumped-parameter models.
+
+## Why LUPA?
+
+Lumped-parameter modeling is a powerful tool for simulating complex dynamic systems, especially in fields like bioengineering and cardiovascular research. However, most existing software tools are either:
+ - difficult to install or configure,
+ - lack a user-friendly interface,
+ - or are tailored for electrical circuits without flexibility for physiological contexts.
+
+**LUPA** aims to fill this gap by providing an intuitive, open-source application for lumped modeling — combining a visual interface with a robust numerical solver. LUPA is focused on cardiovascular analysis which explains most design choices.
 
 ## Features
 
 - **Interactive Circuit Design**: Visual circuit editor with drag-and-drop components
-- **Component Library**: Support for various electrical components:
+- **Component Library**: Support for various components:
   - Resistors (R)
   - Capacitors (C) 
   - Inductors (L)
   - Diodes (D)
-  - Voltage Sources (P)
-  - Current Sources (Q)
+  - Pressure Sources (P)
+  - Flow Sources (Q)
   - Ground connections (G)
 - **Advanced Solver**: Robust numerical solver for circuit analysis
 - **Time-Domain Simulation**: Support for transient analysis
@@ -48,16 +57,16 @@ pip install numpy scipy matplotlib pandas networkx
 pip install -e .
 ```
 
-After installation, you can run LPMS from anywhere using:
+After installation, you can run LUPA from anywhere using:
 ```bash
-lpms
+lupa
 ```
 
 ### Run from Source
 
 ```bash
-git clone https://github.com/maximerenault/LPMS.git
-cd LPMS
+git clone https://github.com/maximerenault/LUPA.git
+cd LUPA
 python main.py
 ```
 
@@ -65,28 +74,25 @@ python main.py
 
 ### Command Line Interface
 
-LPMS provides a command line interface with the following options:
+LUPA provides a command line interface with the following options:
 
 ```bash
 # Start the GUI application
-lpms
+lupa
 
 # Show version
-lpms --version
+lupa --version
 
 # Show help
-lpms --help
+lupa --help
 
 # Open a specific circuit file on startup
-lpms path/to/circuit.json
-
-# Command-line mode (not yet implemented)
-lpms --no-gui
+lupa path/to/circuit.json
 ```
 
 ### GUI Usage
 
-1. **Start the Application**: Run `lpms` or `python main.py` to launch the GUI
+1. **Start the Application**: Run `lupa` or `python main.py` to launch the GUI
 2. **Design Your Circuit**: Use the drawing board to place and connect components
 3. **Set Parameters**: Configure component values and simulation settings
 4. **Solve**: Run the simulation to analyze your circuit
@@ -95,7 +101,7 @@ lpms --no-gui
 ## Project Structure
 
 ```
-LPMS/
+LUPA/
 ├── elements/         # Circuit element definitions
 ├── GUI/              # User interface components
 ├── solvers/          # Circuit solving algorithms

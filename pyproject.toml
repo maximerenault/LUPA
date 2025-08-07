@@ -3,9 +3,9 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "LPMS"
+name = "LUPA"
 version = "0.1.0"
-description = "A Lumped-Parameter Model Solver for electrical circuit simulation and analysis"
+description = "A Lumped-Parameter Analysis tool for cardiovascular simulation and analysis"
 readme = "README.md"
 license = {file = "LICENSE"}
 authors = [
@@ -17,6 +17,8 @@ maintainers = [
 keywords = [
     "circuit-simulation",
     "electrical-engineering", 
+    "bioengineering",
+    "cardiovascular-modeling",
     "lumped-parameter",
     "solver",
     "gui",
@@ -58,16 +60,16 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/maximerenault/LPMS"
-Repository = "https://github.com/maximerenault/LPMS.git"
-Issues = "https://github.com/maximerenault/LPMS/issues"
-Documentation = "https://github.com/maximerenault/LPMS/blob/main/README.md"
+Homepage = "https://github.com/maximerenault/LUPA"
+Repository = "https://github.com/maximerenault/LUPA.git"
+Issues = "https://github.com/maximerenault/LUPA/issues"
+Documentation = "https://github.com/maximerenault/LUPA/blob/main/README.md"
 
 [project.scripts]
-lpms = "main:main"
+lupa = "main:main"
 
 [project.gui-scripts]
-lpms-gui = "main:main"
+lupa-gui = "main:main"
 
 [tool.setuptools]
 package-dir = {"" = "."}
