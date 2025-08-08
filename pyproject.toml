@@ -48,6 +48,7 @@ dependencies = [
     "tkinter-page",
     "pandas>=1.2.0",
     "networkx>=2.5",
+    "platformdirs>=3.0",
 ]
 
 [project.optional-dependencies]
@@ -57,6 +58,8 @@ dev = [
     "black",
     "flake8",
     "mypy",
+    "isort",
+    "pre-commit",
 ]
 
 [project.urls]

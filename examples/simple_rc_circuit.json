@@ -1,0 +1,34 @@
+{
+  "name": "Simple RC Circuit",
+  "description": "Basic resistor-capacitor circuit for demonstrating time-domain analysis",
+  "components": {
+    "R1": {
+      "type": "resistor",
+      "value": "1000",
+      "unit": "ohm",
+      "nodes": ["n1", "n2"]
+    },
+    "C1": {
+      "type": "capacitor", 
+      "value": "1e-6",
+      "unit": "farad",
+      "nodes": ["n2", "gnd"]
+    },
+    "V1": {
+      "type": "voltage_source",
+      "value": "5",
+      "unit": "volt",
+      "nodes": ["n1", "gnd"]
+    }
+  },
+  "nodes": {
+    "n1": {"x": 0, "y": 0},
+    "n2": {"x": 100, "y": 0},
+    "gnd": {"x": 50, "y": -50, "type": "ground"}
+  },
+  "analysis": {
+    "type": "transient",
+    "stop_time": "5e-3",
+    "step_time": "1e-5"
+  }
+}

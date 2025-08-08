@@ -1,0 +1,56 @@
+{
+  "name": "Wheatstone Bridge Circuit",
+  "description": "Bridge circuit for resistance measurement demonstration",
+  "components": {
+    "R1": {
+      "type": "resistor",
+      "value": "1000",
+      "unit": "ohm", 
+      "nodes": ["va", "vb"]
+    },
+    "R2": {
+      "type": "resistor",
+      "value": "1500",
+      "unit": "ohm",
+      "nodes": ["vb", "gnd"]
+    },
+    "R3": {
+      "type": "resistor", 
+      "value": "800",
+      "unit": "ohm",
+      "nodes": ["va", "vc"]
+    },
+    "R4": {
+      "type": "resistor",
+      "value": "1200",
+      "unit": "ohm",
+      "nodes": ["vc", "gnd"]
+    },
+    "V1": {
+      "type": "voltage_source",
+      "value": "10",
+      "unit": "volt",
+      "nodes": ["va", "gnd"]
+    },
+    "Vmeter": {
+      "type": "voltmeter",
+      "nodes": ["vb", "vc"],
+      "description": "Bridge voltage measurement"
+    }
+  },
+  "nodes": {
+    "va": {"x": 0, "y": 0, "label": "A"},
+    "vb": {"x": 100, "y": 50, "label": "B"}, 
+    "vc": {"x": 100, "y": -50, "label": "C"},
+    "gnd": {"x": 0, "y": -100, "type": "ground"}
+  },
+  "analysis": {
+    "type": "dc",
+    "description": "Bridge balance analysis"
+  },
+  "theory": {
+    "balance_condition": "R1/R3 = R2/R4",
+    "current_balance": "When balanced, no current flows through the bridge",
+    "sensitivity": "Bridge sensitivity depends on resistance ratios"
+  }
+}

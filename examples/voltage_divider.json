@@ -1,0 +1,37 @@
+{
+  "name": "Voltage Divider Circuit",
+  "description": "Classic voltage divider demonstrating resistive circuit analysis",
+  "components": {
+    "R1": {
+      "type": "resistor",
+      "value": "1000",
+      "unit": "ohm",
+      "nodes": ["vin", "vout"]
+    },
+    "R2": {
+      "type": "resistor",
+      "value": "2000", 
+      "unit": "ohm",
+      "nodes": ["vout", "gnd"]
+    },
+    "V1": {
+      "type": "voltage_source",
+      "value": "12",
+      "unit": "volt",
+      "nodes": ["vin", "gnd"]
+    }
+  },
+  "nodes": {
+    "vin": {"x": 0, "y": 0, "label": "Input"},
+    "vout": {"x": 100, "y": 0, "label": "Output"},
+    "gnd": {"x": 50, "y": -100, "type": "ground"}
+  },
+  "analysis": {
+    "type": "dc",
+    "description": "DC operating point analysis"
+  },
+  "expected_results": {
+    "vout": "8V",
+    "description": "Output voltage should be 2/3 of input (8V)"
+  }
+}

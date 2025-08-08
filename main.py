@@ -3,6 +3,23 @@ from GUI.drawingboard import DrawingBoard
 import os
 import sys
 import argparse
+import logging
+from importlib.metadata import version as pkg_version
+
+# App metadata
+APP_NAME = "LUPA"
+try:
+    APP_VERSION = pkg_version(APP_NAME)
+except Exception:
+    APP_VERSION = "0.1.0"
+
+# Recent files location (user data dir)
+try:
+    from platformdirs import user_data_dir
+except Exception:
+    # Minimal fallback for environments without platformdirs (should be installed via pyproject)
+    def user_data_dir(appname: str, appauthor: bool = False):
+        return os.path.join(os.path.expanduser("~/.local/share"), appname)
 
 
 class MainWindow(tk.Tk):
@@ -15,19 +32,19 @@ class MainWindow(tk.Tk):
         "icons/LUPA_128.png",
         "icons/LUPA_256.png",
     ]
-    RECENT_FILES_LOG = "recent_files.log"
+    RECENT_FILES_BASENAME = "recent_files.log"
     MAX_RECENT_FILES = 10
 
     def __init__(self) -> None:
         super().__init__()
-        self.title("LUPA")
+        self.title(APP_NAME)
 
         # Set app ID for Windows taskbar grouping
         if sys.platform == "win32":
             try:
                 import ctypes
 
-                myappid = "LUPA.0.1.0"
+                myappid = f"{APP_NAME}.{APP_VERSION}"
                 ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
             except ImportError:
                 pass  # ctypes not available
@@ -40,6 +57,12 @@ class MainWindow(tk.Tk):
         self.read_recent_files()
         self.set_icons()
         self.set_menubars()
+
+    @property
+    def recent_files_path(self) -> str:
+        data_dir = user_data_dir(APP_NAME, appauthor=False)
+        os.makedirs(data_dir, exist_ok=True)
+        return os.path.join(data_dir, self.RECENT_FILES_BASENAME)
 
     def set_icons(self):
         icons = [tk.PhotoImage(file=path) for path in self.ICON_PATHS]
@@ -55,11 +78,9 @@ class MainWindow(tk.Tk):
         menubar.add_cascade(menu=menu_edit, label="Edit")
 
         menu_file.add_command(label="New", command=self.new_file)
-        menu_recent = tk.Menu(menu_file)
-        menu_file.add_cascade(menu=menu_recent, label="Open Recent")
-        for i, f in enumerate(reversed(self.recent_files)):
-            accelerator = "Ctrl+o" if i == 0 else None
-            menu_recent.add_command(label=os.path.basename(f), command=lambda f=f: self.open_file(f), accelerator=accelerator)
+        self.menu_recent = tk.Menu(menu_file)
+        menu_file.add_cascade(menu=self.menu_recent, label="Open Recent")
+        self._rebuild_recent_menu()
 
         menu_file.add_command(label="Open", command=self.open_file)
         menu_file.add_command(label="Save", command=self.save_file, accelerator="Ctrl+s")
@@ -68,23 +89,50 @@ class MainWindow(tk.Tk):
         self.bind("<Control-o>", lambda e: self.open_most_recent_file())
         self.bind("<Control-x>", lambda e: self.close_file())
 
+    def _rebuild_recent_menu(self):
+        self.menu_recent.delete(0, "end")
+        existing = [f for f in self.recent_files if isinstance(f, str) and os.path.exists(f)]
+        self.recent_files = existing[-self.MAX_RECENT_FILES :]
+        for i, f in enumerate(reversed(self.recent_files)):
+            accelerator = "Ctrl+o" if i == 0 else None
+            self.menu_recent.add_command(label=os.path.basename(f), command=lambda f=f: self.open_file(f), accelerator=accelerator)
+
     def read_recent_files(self):
-        if os.path.exists(self.RECENT_FILES_LOG):
-            with open(self.RECENT_FILES_LOG, "r") as f:
-                self.recent_files = [line.strip() for line in f if line.strip()]
-        self.recent_files = list(set(self.recent_files))
+        try:
+            if os.path.exists(self.recent_files_path):
+                with open(self.recent_files_path, "r") as f:
+                    lines = [line.strip() for line in f if line.strip()]
+                seen = set()
+                ordered = []
+                for p in lines:
+                    ap = os.path.abspath(p)
+                    if ap not in seen and os.path.exists(ap):
+                        seen.add(ap)
+                        ordered.append(ap)
+                self.recent_files = ordered[-self.MAX_RECENT_FILES :]
+        except Exception as e:
+            logging.getLogger(APP_NAME).warning("Failed to read recent files: %s", e)
+            self.recent_files = []
 
     def write_recent_files(self):
-        with open(self.RECENT_FILES_LOG, "w") as f:
-            for filename in self.recent_files:
-                f.write(filename + "\n")
+        try:
+            with open(self.recent_files_path, "w") as f:
+                for filename in self.recent_files[-self.MAX_RECENT_FILES :]:
+                    f.write(filename + "\n")
+        except Exception as e:
+            logging.getLogger(APP_NAME).warning("Failed to write recent files: %s", e)
 
     def add_recent_file(self, filename=None):
-        if filename and filename not in self.recent_files:
-            self.recent_files.append(filename)
+        if not filename:
+            return
+        filename = os.path.abspath(filename)
+        if filename in self.recent_files:
+            self.recent_files.remove(filename)
+        self.recent_files.append(filename)
         if len(self.recent_files) > self.MAX_RECENT_FILES:
             self.recent_files = self.recent_files[-self.MAX_RECENT_FILES :]
-        self.set_menubars()
+        self._rebuild_recent_menu()
+        self.write_recent_files()
 
     def new_file(self):
         self.drbd.destroy()
@@ -102,12 +150,10 @@ class MainWindow(tk.Tk):
         self.drbd = DrawingBoard(self)
         self.filename = self.drbd.load(filename)
         self.add_recent_file(self.filename)
-        self.write_recent_files()
 
     def save_file(self, filename=None):
         self.filename = self.drbd.save(filename)
         self.add_recent_file(self.filename)
-        self.write_recent_files()
 
     def close_file(self):
         # Placeholder for actual close file logic
@@ -116,16 +162,18 @@ class MainWindow(tk.Tk):
 
 def main():
     """Entry point for the LUPA application."""
-    parser = argparse.ArgumentParser(description="LUPA - Lumped-Parameter Analysis", prog="lupa")
-    parser.add_argument("--version", action="version", version="LUPA 0.1.0")
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s:%(name)s:%(message)s")
+    logger = logging.getLogger(APP_NAME)
+
+    parser = argparse.ArgumentParser(description=f"{APP_NAME} - Lumped-Parameter Analysis", prog="lupa")
+    parser.add_argument("--version", action="version", version=f"{APP_NAME} {APP_VERSION}")
     parser.add_argument("file", nargs="?", help="Circuit file to open on startup")
     parser.add_argument("--no-gui", action="store_true", help="Run in command-line mode (not yet implemented)")
 
     args = parser.parse_args()
 
     if args.no_gui:
-        print("Command-line mode not yet implemented.")
-        print("Use 'lupa' without --no-gui to start the GUI application.")
+        logger.info("Command-line mode not yet implemented. Use 'lupa' without --no-gui to start the GUI application.")
         return
 
     try:
@@ -136,13 +184,13 @@ def main():
             if os.path.exists(args.file):
                 root.open_file(args.file)
             else:
-                print(f"Warning: File '{args.file}' not found.")
+                logger.warning("File not found: %s", args.file)
 
         root.mainloop()
     except KeyboardInterrupt:
-        print("\nApplication interrupted by user")
-    except Exception as e:
-        print(f"Error starting LUPA: {e}")
+        logger.info("Application interrupted by user")
+    except Exception:
+        logging.getLogger(APP_NAME).exception("Error starting %s", APP_NAME)
         raise
 
 
