@@ -1,5 +1,34 @@
 """
-Infix calculator
+Infix calculator for mathematical expressions with configurable constants and functions.
+
+This module provides a flexible mathematical expression calculator that supports:
+- Basic arithmetic operations (+, -, *, /, **, %)
+- Mathematical functions (sin, cos, tan, abs, floor, etc.)
+- Custom constants and variables
+- Configurable calculator instances
+- Expression parsing with proper operator precedence
+
+Main classes:
+- Calculator: Configurable calculator instance
+- PeekableIterator: Iterator with lookahead support
+- Scanner: Tokenizes mathematical expressions
+- Parser: Parses and evaluates tokenized expressions
+
+Global instance:
+- calculator: Default calculator instance for simple usage
+
+Usage:
+    Basic usage with global calculator:
+    >>> from utils.calculator import calculate
+    >>> calculate('2 + 3 * 4')
+    14.0
+
+    Custom calculator with additional constants:
+    >>> from utils.calculator import Calculator
+    >>> calc = Calculator(custom_constants={'R': 1000, 'C': 1e-6})
+    >>> calc.calculate('2 * pi * R * C')
+    0.006283185307179587
+
 Adapted from https://gist.github.com/baileyparker/309436dddf2f34f06cfc363aa5a6c86f
 
 EBNF formulation:
@@ -19,6 +48,7 @@ Constant = "e" | "pi" ;
 Variable = "t" | ... ;
 """
 
+from typing import Iterable, List, Dict, Any, Union, Callable, Optional, Tuple, Generator, TypeVar
 import numpy as np
 import operator as op
 from exceptions.calculatorexceptions import (
@@ -28,6 +58,9 @@ from exceptions.calculatorexceptions import (
     WrongArgsLenError,
     UnexpectedEndError,
 )
+
+# Public API exports
+__all__ = ["Calculator", "calculator", "calculate"]
 
 # Constants for operator precedence
 PREC_EXPONENTIATION = 1
@@ -41,7 +74,7 @@ PREC_LOGICAL_OR = 8
 
 
 # Utility functions
-def evaluate(items):
+def evaluate(items: List):
     """Evaluate a list of float-returning functions separated by operators
     (at the same level of precedence). Returns the result.
 
@@ -64,13 +97,13 @@ def evaluate(items):
     return items[0]
 
 
-def _evaluate_binary(lhs, op, rhs):
+def _evaluate_binary(lhs: Callable, op: str, rhs: Callable):
     """Evaluates a single binary operation op where lhs and rhs are functions
     returning floats or float arrays."""
     return lambda *args: flatten(operators)[op](lhs(*args), rhs(*args))
 
 
-def flatten(iterable):
+def flatten(iterable: Iterable):
     """Flattens a nested iterable by one nesting layer.
 
     >>> flatten([[1,2], [3]])
@@ -87,7 +120,7 @@ def flatten(iterable):
     return [x for l in iterable for x in l]
 
 
-def get_char(list_str, idx):
+def get_char(list_str: List, idx: int):
     """Returns a list of characters of index idx from strings
     listed in list_str. If the string is too short,
     returns an empty string.
@@ -105,7 +138,7 @@ def get_char(list_str, idx):
     return [string[idx] if idx < len(string) else "" for string in list_str]
 
 
-def is_char_inorder(list_str):
+def is_char_inorder(list_str: List[str]):
     """Generator for checking non-number tokens. It asks for the character
     to check, then takes all the tokens starting with this character
     and yields True if such tokens exist, False otherwise. It repeats
@@ -175,10 +208,93 @@ operators = {
     PREC_LOGICAL_OR: {"|": op.or_},
 }
 
-constants = {"e": np.e, "pi": np.pi}
-variables = ["t"]
-all_tokens = list(functions) + list(flatten(operators)) + list(constants) + variables
-all_chars = "".join(all_tokens) + "0123456789.e-+()"
+
+class Calculator:
+    """A configurable mathematical expression calculator."""
+
+    def __init__(
+        self,
+        custom_constants: Dict[str, float] = None,
+        custom_variables: Dict[str, str] = None,
+        custom_functions: Dict[str, Callable[[float], float]] = None,
+    ):
+        """Initialize calculator with optional custom constants, variables, and functions.
+
+        Args:
+            custom_constants (dict, optional): Additional constants to include
+            custom_variables (list, optional): Additional variables to support
+            custom_functions (dict, optional): Additional functions to include
+        """
+        # Base configuration
+        self.constants = {"e": np.e, "pi": np.pi}
+        self.variables = {"t": "t"}
+        self.functions = functions.copy()
+
+        # Add custom configurations
+        if custom_constants:
+            self.constants.update(custom_constants)
+        if custom_variables:
+            self.variables.update(custom_variables)
+        if custom_functions:
+            self.functions.update(custom_functions)
+
+        # Build tokens and chars for this calculator instance
+        self._update_tokens()
+
+    def _update_tokens(self):
+        """Update all_tokens and all_chars based on current configuration."""
+        self.all_tokens = list(self.functions) + list(flatten(operators)) + list(self.constants) + list(self.variables)
+        self.all_chars = "".join(self.all_tokens) + "0123456789.e-+()"
+
+    def add_constants(self, constants: Dict[str, float]):
+        """Add multiple constants to the calculator."""
+        for name, value in constants.items():
+            if name in self.constants:
+                raise ValueError(f"Constant '{name}' already exists.")
+            self.constants[name] = value
+        self._update_tokens()
+
+    def add_variables(self, variables: Dict[str, str]):
+        """Add multiple variables to the calculator."""
+        for name, expr in variables.items():
+            if name in self.variables:
+                raise ValueError(f"Variable '{name}' already exists.")
+            self.variables[name] = expr
+        self._update_tokens()
+
+    def add_functions(self, functions: Dict[str, Callable[[float], float]]):
+        """Add multiple functions to the calculator."""
+        for name, func in functions.items():
+            if name in self.functions:
+                raise ValueError(f"Function '{name}' already exists.")
+            self.functions[name] = func
+        self._update_tokens()
+
+    def calculate(self, expression: str, return_vars: bool = False):
+        """Evaluates a mathematical expression and returns the result.
+
+        Args:
+            expression (str): Mathematical expression to evaluate
+            return_vars (bool): Whether to return variables used in expression
+
+        Returns:
+            float or callable or tuple: Result of evaluation
+
+        >>> calc = Calculator()
+        >>> calc.calculate('3 * (1 + 6 / 3)')
+        9.0
+        """
+        scan = Scanner(expression, self).scan()
+        result, vars = Parser(scan, self).parse()
+
+        if return_vars:
+            return (result(), vars) if not vars else (result, vars)
+
+        return result() if not vars else result
+
+
+# Default global calculator instance
+calculator: Calculator = Calculator()
 
 
 # Classes
@@ -197,7 +313,7 @@ class PeekableIterator:
     3
     """
 
-    def __init__(self, iterable):
+    def __init__(self, iterable: Iterable):
         self._iterator = iter(iterable)
         self._next_item = next(self._iterator, None)
         self._done = self._next_item is None
@@ -222,10 +338,10 @@ class PeekableIterator:
 class BaseParser:
     """A base class containing utilities useful for a Parser."""
 
-    def __init__(self, items):
+    def __init__(self, items: Iterable):
         self._items = PeekableIterator(items)
 
-    def _take(self, predicate):
+    def _take(self, predicate: Callable[[Any], bool]):
         """
         Yields a contiguous group of items from the items being parsed for
         which the predicate returns True.
@@ -241,9 +357,14 @@ class BaseParser:
 class Scanner(BaseParser):
     """Scanner scans an input string for calculator tokens and yields them.
 
-    >>> list(Scanner('11 * (2 + 3)').scan())
-    [11, '(', 2, '+', 3, ')']
+    >>> calc = Calculator()
+    >>> list(Scanner('11 * (2 + 3)', calc).scan())
+    [11.0, '*', '(', 2.0, '+', 3.0, ')']
     """
+
+    def __init__(self, items: Iterable, calculator_instance: Calculator):
+        super().__init__(items)
+        self.calc: Calculator = calculator_instance
 
     def scan(self):
         """Yields all tokens in the input."""
@@ -260,7 +381,7 @@ class Scanner(BaseParser):
     def _check_supported(self):
         """Checks if next char is supported. Avoids infinite loops."""
         c = self._items.peek()
-        if c not in all_chars:
+        if c not in self.calc.all_chars:
             raise UnexpectedCharacterError(c)
 
     def _take_number(self):
@@ -281,7 +402,7 @@ class Scanner(BaseParser):
 
     def _take_function_operator_variable(self):
         """Yields a single function, operator or variable if there is one next in the input."""
-        gen = is_char_inorder(all_tokens)
+        gen = is_char_inorder(self.calc.all_tokens)
 
         def check(c):
             try:
@@ -292,16 +413,18 @@ class Scanner(BaseParser):
 
         fov = "".join(self._take(check))
         if fov:
-            if fov not in all_tokens:
-                raise BadFunctionError(fov, all_tokens)
+            if fov not in self.calc.all_tokens:
+                complete_fov = fov + "".join(self._take(lambda c: c in "abcdefghijklmnopqrstuvwxyz0123456789"))
+                raise BadFunctionError(complete_fov, self.calc.all_tokens)
             yield fov
 
 
 class Parser(BaseParser):
     """Parser for tokenized calculator inputs."""
 
-    def __init__(self, items):
+    def __init__(self, items: Iterable, calculator_instance: Calculator):
         super().__init__(items)
+        self.calc = calculator_instance
         self.vars = []
 
     def parse(self):
@@ -312,7 +435,7 @@ class Parser(BaseParser):
         """
         return self._parse_expression(max(operators.keys())), self.vars
 
-    def _parse_expression(self, precedence):
+    def _parse_expression(self, precedence: int):
         """Parse a Term and return the result of evaluating it.
 
         >>> Parser([3, '*', 2])._parse_expression(2)
@@ -343,14 +466,14 @@ class Parser(BaseParser):
         for value in self._take(lambda t: isinstance(t, float)):
             return lambda *args: value
 
-        for var in self._take(lambda t: t in variables):
+        for var in self._take(lambda t: t in self.calc.variables):
             if var not in self.vars:
                 self.vars.append(var)
 
             def lambd(*args):
                 if len(args) != len(self.vars):
                     raise WrongArgsLenError(len(args), len(self.vars))
-                return args[variables.index(var)]
+                return args[self.vars.index(var)]
 
             return lambd
 
@@ -358,15 +481,15 @@ class Parser(BaseParser):
             value = self._parse_factor()
             return lambda *args: (value(*args) if sign == "+" else -value(*args))
 
-        for cons in self._take(lambda t: t in constants):
-            value = constants[cons]
+        for cons in self._take(lambda t: t in self.calc.constants):
+            value = self.calc.constants[cons]
             return lambda *args: value
 
-        for func in self._take(lambda t: t in functions):
+        for func in self._take(lambda t: t in self.calc.functions):
             self._expect("(")
             value = self._parse_expression(max(operators.keys()))
             self._expect(")")
-            return lambda *args: functions[func](value(*args))
+            return lambda *args: self.calc.functions[func](value(*args))
 
         for _ in self._take(lambda t: t == "("):
             value = self._parse_expression(max(operators.keys()))
@@ -376,13 +499,13 @@ class Parser(BaseParser):
         # Parsing the number, function and subexpresion failed
         raise self._unexpected("number", "(", "function")
 
-    def _expect(self, char):
+    def _expect(self, char: str):
         """Expect a certain character, or raise if it is not next."""
         for _ in self._take(lambda t: t == char):
             return
         raise self._unexpected(char)
 
-    def _unexpected(self, *expected):
+    def _unexpected(self, *expected: str):
         """Create an exception for an unexpected character."""
         try:
             return UnexpectedCharacterError(self._items.peek(), expected)
@@ -390,34 +513,17 @@ class Parser(BaseParser):
             return UnexpectedEndError(expected)
 
 
-def calculate(expression, return_vars=False):
-    """Evaluates a mathematical expression and returns the result.
+def calculate(expression: str, return_vars: bool = False):
+    """Evaluates a mathematical expression and returns the result using the global calculator.
+
+    Args:
+        expression (str): Mathematical expression to evaluate
+        return_vars (bool): Whether to return variables used in expression
+
+    Returns:
+        float or callable or tuple: Result of evaluation
 
     >>> calculate('3 * (1 + 6 / 3)')
-    9
+    9.0
     """
-    scan = Scanner(expression).scan()
-    result, vars = Parser(scan).parse()
-
-    if return_vars:
-        return (result(), vars) if not vars else (result, vars)
-
-    return result() if not vars else result
-
-
-# my_constants = {"Emin": 0.1, "Emax": 2.0, "T1": 0.15, "T2": 0.3, "Tt": 0.7}
-# constants = constants | my_constants
-# all_tokens = list(functions) + list(flatten(operators)) + list(constants) + variables
-# all_chars = "".join(all_tokens) + "0123456789.e-+()"  # Add characters specific to numbers
-
-# tmod = calculate("t-floor(t/Tt)*Tt")
-# El = calculate("1.333e3 * (Emin+(Emax-Emin)*( (t<=T2)*(t>=T1)*1/2*(1+cos(pi*(t-T1)/(T2-T1))) + (t<T1)*1/2*(1-cos(pi*t/T1)) ))")
-
-# t = np.linspace(0,3,300)
-# tmod_values = tmod(t)
-# El_values = El(tmod_values)
-
-# import matplotlib.pyplot as plt
-
-# plt.plot(t,El_values)
-# plt.show()
+    return calculator.calculate(expression, return_vars)
