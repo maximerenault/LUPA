@@ -193,6 +193,7 @@ class DrawingBoard(GridZoom):
             data["nodes"].append(node.to_dict())
         for el in self.cgeom.elems:
             data["elements"].append(el.to_dict(self.cgeom.nodes))
+        self.frameVariables.save_variables(data)
         return savetojson(data, filename)
 
     def load(self, filename=None):
@@ -203,6 +204,7 @@ class DrawingBoard(GridZoom):
         self.clear_canvas()
         self.load_nodes_elements(data["nodes"], data["elements"])
         self.redraw_elements()
+        self.frameVariables.load_variables(data)
 
         return filename
 

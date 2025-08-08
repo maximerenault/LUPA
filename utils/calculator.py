@@ -230,6 +230,10 @@ class Calculator:
         self.variables = {"t": "t"}
         self.functions = functions.copy()
 
+        # Mark built-in defaults as protected (read-only & non-removable)
+        self._protected_constants = set(self.constants.keys())
+        self._protected_variables = set(self.variables.keys())
+
         # Add custom configurations
         if custom_constants:
             self.constants.update(custom_constants)
@@ -246,6 +250,12 @@ class Calculator:
         self.all_tokens = list(self.functions) + list(flatten(operators)) + list(self.constants) + list(self.variables)
         self.all_chars = "".join(self.all_tokens) + "0123456789.e-+()"
 
+    def is_protected_constant(self, name: str) -> bool:
+        return name in self._protected_constants
+
+    def is_protected_variable(self, name: str) -> bool:
+        return name in self._protected_variables
+
     def add_constants(self, constants: Dict[str, float]):
         """Add multiple constants to the calculator."""
         for name, value in constants.items():
@@ -261,7 +271,7 @@ class Calculator:
                 raise ValueError(f"Variable '{name}' already exists.")
             self.variables[name] = expr
         self._update_tokens()
-
+    
     def add_functions(self, functions: Dict[str, Callable[[float], float]]):
         """Add multiple functions to the calculator."""
         for name, func in functions.items():
@@ -269,6 +279,48 @@ class Calculator:
                 raise ValueError(f"Function '{name}' already exists.")
             self.functions[name] = func
         self._update_tokens()
+
+    def set_constant(self, name: str, value: Union[int, float]):
+        """Create or update a constant. Protected constants are read-only (cannot be changed)."""
+        if name in self._protected_constants:
+            # Allow no-op set to same value, but block changes
+            current = self.constants.get(name)
+            if current is None or float(value) != float(current):
+                raise ValueError(f"Constant '{name}' is read-only and cannot be modified.")
+            return
+        try:
+            num_val = float(value)
+        except (TypeError, ValueError):
+            raise ValueError(f"Constant '{name}' must be a number.")
+        self.constants[name] = num_val
+        self._update_tokens()
+
+    def set_variable(self, name: str, expr: str):
+        """Create or update a variable token. Protected variables are read-only (cannot be changed)."""
+        if name in self._protected_variables:
+            current = self.variables.get(name)
+            if current is None or expr != current:
+                raise ValueError(f"Variable '{name}' is read-only and cannot be modified.")
+            return
+        self.variables[name] = expr
+        self._update_tokens()
+
+    def remove_constant(self, name: str):
+        """Remove a constant, unless it is protected."""
+        if name in self._protected_constants:
+            raise ValueError(f"Constant '{name}' is protected and cannot be removed.")
+        if name in self.constants:
+            del self.constants[name]
+            self._update_tokens()
+
+    def remove_variable(self, name: str):
+        """Remove a variable, unless it is protected."""
+        if name in self._protected_variables:
+            raise ValueError(f"Variable '{name}' is protected and cannot be removed.")
+        if name in self.variables:
+            del self.variables[name]
+            self._update_tokens()
+
 
     def calculate(self, expression: str, return_vars: bool = False):
         """Evaluates a mathematical expression and returns the result.
