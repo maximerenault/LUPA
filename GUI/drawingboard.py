@@ -198,7 +198,7 @@ class DrawingBoard(GridZoom):
     def load(self, filename=None):
         data, filename = loadfromjson(filename)
         if data is None:
-            return
+            return None
 
         self.clear_canvas()
         self.load_nodes_elements(data["nodes"], data["elements"])

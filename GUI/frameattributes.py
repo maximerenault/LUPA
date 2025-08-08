@@ -31,52 +31,85 @@ class FrameAttributes(ttk.Frame):
         self.rowconfigure((0, 2), weight=1)
         self.columnconfigure(0, weight=1)
 
-        self.widget_lists = {
-            "Clear": ["clear"],
-            "Wire": [
-                [
-                    ["labnam", "labsta", "lablisten", "labend", "lablisten", "lablistenQ"],
-                    ["name", [["startx"], ["starty"]], "listenPstart", [["endx"], ["endy"]], "listenPend", "listenQ"],
-                ],
-                "delete",
-            ],
-            "Dipole": [
-                [
-                    ["labnam", "labsta", "lablisten", "labend", "lablisten", "labval", "lablistenQ"],
-                    [
-                        "name",
-                        [["startx"], ["starty"]],
-                        "listenPstart",
-                        [["endx"], ["endy"]],
-                        "listenPend",
-                        "value",
-                        "listenQ",
-                    ],
-                ],
-                "delete",
-            ],
-            "Ground": [[["labnam", "labsta", "labdir"], ["name", [["startx"], ["starty"]], "direction"]], "delete"],
-            "Source": [
-                [["labnam", "labsta", "labdir", "labval"], ["name", [["startx"], ["starty"]], "direction", "value"]],
-                "source",
-                "read",
-                "delete",
-            ],
-        }
-
-        self.rowcol_weigths = {
-            "Clear": {"rows": [0], "rowweights": [1], "cols": [0], "colweights": [1]},
-            "Wire": {"rows": [], "rowweights": [], "cols": [1, 2], "colweights": [1, 1]},
-            "Dipole": {"rows": [], "rowweights": [], "cols": [1, 2], "colweights": [1, 1]},
-            "Ground": {"rows": [], "rowweights": [], "cols": [1, 2], "colweights": [1, 1]},
-            "Source": {"rows": [], "rowweights": [], "cols": [1, 2], "colweights": [1, 1]},
+        self.widget_configs = {
+            "Clear": {
+                "layout": {"clear": {"type": "label", "grid": {"row": 0, "column": 0}}},
+                "rowcol_weights": {"rows": [0], "rowweights": [1], "cols": [0], "colweights": [1]},
+            },
+            "Wire": {
+                "layout": {
+                    "labnam": {"type": "label", "grid": {"row": 0, "column": 0}},
+                    "name": {"type": "entry", "grid": {"row": 0, "column": 1, "columnspan": 2, "sticky": "ew"}},
+                    "labsta": {"type": "label", "grid": {"row": 1, "column": 0}},
+                    "startx": {"type": "entry", "grid": {"row": 1, "column": 1}},
+                    "starty": {"type": "entry", "grid": {"row": 1, "column": 2}},
+                    "lablistenPstart": {"type": "label", "grid": {"row": 2, "column": 0}},
+                    "listenPstart": {"type": "checkbox", "grid": {"row": 2, "column": 1}},
+                    "labend": {"type": "label", "grid": {"row": 3, "column": 0}},
+                    "endx": {"type": "entry", "grid": {"row": 3, "column": 1}},
+                    "endy": {"type": "entry", "grid": {"row": 3, "column": 2}},
+                    "lablistenPend": {"type": "label", "grid": {"row": 4, "column": 0}},
+                    "listenPend": {"type": "checkbox", "grid": {"row": 4, "column": 1}},
+                    "lablistenQ": {"type": "label", "grid": {"row": 5, "column": 0}},
+                    "listenQ": {"type": "radio", "grid": {"row": 5, "column": 1, "columnspan": 2, "sticky": "ew"}},
+                    "delete": {"type": "button", "grid": {"row": 6, "column": 0, "columnspan": 3, "sticky": "ew"}},
+                },
+                "rowcol_weights": {"rows": [], "rowweights": [], "cols": [1, 2], "colweights": [1, 1]},
+            },
+            "Dipole": {
+                "layout": {
+                    "labnam": {"type": "label", "grid": {"row": 0, "column": 0}},
+                    "name": {"type": "entry", "grid": {"row": 0, "column": 1, "columnspan": 2, "sticky": "ew"}},
+                    "labsta": {"type": "label", "grid": {"row": 1, "column": 0}},
+                    "startx": {"type": "entry", "grid": {"row": 1, "column": 1}},
+                    "starty": {"type": "entry", "grid": {"row": 1, "column": 2}},
+                    "labend": {"type": "label", "grid": {"row": 2, "column": 0}},
+                    "endx": {"type": "entry", "grid": {"row": 2, "column": 1}},
+                    "endy": {"type": "entry", "grid": {"row": 2, "column": 2}},
+                    "labval": {"type": "label", "grid": {"row": 3, "column": 0}},
+                    "value": {"type": "entry", "grid": {"row": 3, "column": 1, "columnspan": 2, "sticky": "ew"}},
+                    "delete": {"type": "button", "grid": {"row": 4, "column": 0, "columnspan": 3, "sticky": "ew"}},
+                },
+                "rowcol_weights": {"rows": [], "rowweights": [], "cols": [1, 2], "colweights": [1, 1]},
+            },
+            "Ground": {
+                "layout": {
+                    "labnam": {"type": "label", "grid": {"row": 0, "column": 0}},
+                    "name": {"type": "entry", "grid": {"row": 0, "column": 1, "columnspan": 2, "sticky": "ew"}},
+                    "labsta": {"type": "label", "grid": {"row": 1, "column": 0}},
+                    "startx": {"type": "entry", "grid": {"row": 1, "column": 1}},
+                    "starty": {"type": "entry", "grid": {"row": 1, "column": 2}},
+                    "labdir": {"type": "label", "grid": {"row": 2, "column": 0}},
+                    "direct": {"type": "combobox", "grid": {"row": 2, "column": 1, "columnspan": 2, "sticky": "ew"}},
+                    "delete": {"type": "button", "grid": {"row": 3, "column": 0, "columnspan": 3, "sticky": "ew"}},
+                },
+                "rowcol_weights": {"rows": [], "rowweights": [], "cols": [1, 2], "colweights": [1, 1]},
+            },
+            "Source": {
+                "layout": {
+                    "labnam": {"type": "label", "grid": {"row": 0, "column": 0}},
+                    "name": {"type": "entry", "grid": {"row": 0, "column": 1, "columnspan": 2, "sticky": "ew"}},
+                    "labsta": {"type": "label", "grid": {"row": 1, "column": 0}},
+                    "startx": {"type": "entry", "grid": {"row": 1, "column": 1}},
+                    "starty": {"type": "entry", "grid": {"row": 1, "column": 2}},
+                    "labdir": {"type": "label", "grid": {"row": 2, "column": 0}},
+                    "direct": {"type": "combobox", "grid": {"row": 2, "column": 1, "columnspan": 2, "sticky": "ew"}},
+                    "labval": {"type": "label", "grid": {"row": 3, "column": 0}},
+                    "value": {"type": "entry", "grid": {"row": 3, "column": 1, "columnspan": 2, "sticky": "ew"}},
+                    "source": {"type": "plot", "grid": {"row": 4, "column": 0, "columnspan": 3, "sticky": "ew"}},
+                    "read": {"type": "button", "grid": {"row": 5, "column": 0, "columnspan": 3, "sticky": "ew"}},
+                    "delete": {"type": "button", "grid": {"row": 6, "column": 0, "columnspan": 3, "sticky": "ew"}},
+                },
+                "rowcol_weights": {"rows": [], "rowweights": [], "cols": [1, 2], "colweights": [1, 1]},
+            },
         }
 
         self.label_options = {
             "labnam": {"text": "Name"},
             "labval": {"text": "Value"},
             "labsta": {"text": "Start"},
-            "lablisten": {"text": "Listen"},
+            "lablistenPstart": {"text": "Listen P"},
+            "lablistenPend": {"text": "Listen P"},
             "lablistenQ": {"text": "Listen Q"},
             "labend": {"text": "End"},
             "labdir": {"text": "Direction"},
@@ -93,7 +126,7 @@ class FrameAttributes(ttk.Frame):
         }
 
         self.cbbox_options = {
-            "direction": {"values": ["S", "E", "N", "W"], "bindfunc": self.update_direction},
+            "direct": {"values": ["S", "E", "N", "W"], "bindfunc": self.update_direction},
         }
 
         self.plot_options = {"source": {"dpi": 100, "xy": ([0, 1], [0, 1])}}
@@ -112,7 +145,7 @@ class FrameAttributes(ttk.Frame):
             "listenQ": {"texts": ["off", "Q", "-Q"], "values": [0, 1, -1], "value": 0, "command": self.set_listenQ},
         }
 
-        self.widget_frame = FrameBase(self, [])
+        self.widget_frame = FrameBase(self, {})
         self.update_widget_list()
 
         self.drbd = drbd
@@ -176,15 +209,6 @@ class FrameAttributes(ttk.Frame):
             return
         el = self.drbd.cgeom.elems[self.elem]
         el.set_value(stringvar.get())
-        # valstr = check_strfloat(stringvar.get())
-        # stringvar.set(valstr)
-        # if valstr == "" or valstr == "-":
-        #     return
-        # try:
-        #     val = float(valstr)
-        #     el.set_value(val)
-        # except:
-        #     raise BadNumberError(valstr)
 
     def read_values(self):
         """
@@ -261,9 +285,10 @@ class FrameAttributes(ttk.Frame):
     def update_widget_list(self, key: str = "Clear"):
         self.widget_frame.delete_all()
         del self.widget_frame
+        config = self.widget_configs[key]
         self.widget_frame = FrameBase(
             self,
-            self.widget_lists[key],
+            config["layout"],
             self.label_options,
             self.entry_options,
             self.button_options,
@@ -273,11 +298,11 @@ class FrameAttributes(ttk.Frame):
             self.radio_options,
         )
         self.widget_frame.grid(row=1, column=0, sticky="nsew")
-        for i, row in enumerate(self.rowcol_weigths[key]["rows"]):
-            w = self.rowcol_weigths[key]["rowweights"][i]
+        for i, row in enumerate(config["rowcol_weights"]["rows"]):
+            w = config["rowcol_weights"]["rowweights"][i]
             self.widget_frame.rowconfigure(row, weight=w)
-        for i, col in enumerate(self.rowcol_weigths[key]["cols"]):
-            w = self.rowcol_weigths[key]["colweights"][i]
+        for i, col in enumerate(config["rowcol_weights"]["cols"]):
+            w = config["rowcol_weights"]["colweights"][i]
             self.widget_frame.columnconfigure(col, weight=w)
 
     def update_attributes(self):
@@ -290,7 +315,7 @@ class FrameAttributes(ttk.Frame):
         if isinstance(el, Resistor) or isinstance(el, Inductor) or isinstance(el, Capacitor):
             elemtype = "Dipole"
         elif type(el) == Wire or type(el) == Diode:
-            elemtype = "Wire"  # Careful with inheritance and isinstance
+            elemtype = "Wire"
         elif isinstance(el, PSource):
             elemtype = "Source"
         elif isinstance(el, Ground):
@@ -310,7 +335,7 @@ class FrameAttributes(ttk.Frame):
         self.checkbox_options["listenPend"]["onoff"] = int(el.get_listenP(1))
         self.radio_options["listenQ"]["value"] = int(el.get_listenQ())
 
-        if el.active == True:
+        if el.active:
             x = np.linspace(0, 10, 100)
             y = calc.calculate(el.get_value())(x)
             self.plot_options["source"]["xy"] = (x, y)
