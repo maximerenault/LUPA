@@ -2,6 +2,7 @@ import pandas as pd
 import json
 import numpy as np
 from tkinter import filedialog
+from tkinter.messagebox import showerror
 from typing import Optional, Tuple
 
 
@@ -62,7 +63,11 @@ def loadfromjson(filename: Optional[str] = None) -> Tuple[Optional[dict], Option
         if infile is None:
             return None, None
     else:
-        infile = open(filename, "r")
+        try:
+            infile = open(filename, "r")
+        except FileNotFoundError:
+            showerror("File Not Found", f"The file {filename} does not exist.")
+            return None, None
 
     data = json.load(infile)
     infile.close()
