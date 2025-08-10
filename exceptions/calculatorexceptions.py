@@ -9,13 +9,21 @@ class BadNumberError(CalculatorException):
 
 class BadFunctionError(CalculatorException):
     def __init__(self, func, suppd_func):
-        super().__init__("unexpected function {}, list of supported functions: {}".format(repr(func), repr(suppd_func)))
+        super().__init__(
+            "unexpected function {}, list of supported functions: {}".format(
+                repr(func), repr(suppd_func)
+            )
+        )
 
 
 class UnexpectedCharacterError(CalculatorException):
     def __init__(self, char, expected=[]):
         if expected:
-            super().__init__("unexpected character {}, expected: {}".format(repr(char), repr(expected)))
+            super().__init__(
+                "unexpected character {}, expected: {}".format(
+                    repr(char), repr(expected)
+                )
+            )
         else:
             super().__init__("unexpected character: {}".format(char))
 
@@ -27,4 +35,6 @@ class UnexpectedEndError(CalculatorException):
 
 class WrongArgsLenError(CalculatorException):
     def __init__(self, got, expected):
-        super().__init__("got {} arguments, but expected {}".format(repr(got), repr(expected)))
+        super().__init__(
+            "got {} arguments, but expected {}".format(repr(got), repr(expected))
+        )

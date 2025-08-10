@@ -28,14 +28,18 @@ def savetojson(data: dict, filename: Optional[str] = None) -> Optional[str]:
 
     Args:
         data (dict): The data to save.
-        filename (Optional[str]): The name of the file. If None, a file dialog will open.
+        filename (Optional[str]): The name of the file. If None, a file dialog
+        will open.
 
     Returns:
-        Optional[str]: The name of the file where data was saved, or None if the operation was canceled.
+        Optional[str]: The name of the file where data was saved, or None if
+        the operation was canceled.
     """
     if filename is None:
         outfile = filedialog.asksaveasfile(
-            initialfile="circuit.json", defaultextension=".json", filetypes=[("All Files", "*.*"), ("JSON", "*.json")]
+            initialfile="circuit.json",
+            defaultextension=".json",
+            filetypes=[("All Files", "*.*"), ("JSON", "*.json")],
         )
         if outfile is None:
             return None
@@ -48,18 +52,24 @@ def savetojson(data: dict, filename: Optional[str] = None) -> Optional[str]:
     return outfile.name if filename is None else filename
 
 
-def loadfromjson(filename: Optional[str] = None) -> Tuple[Optional[dict], Optional[str]]:
+def loadfromjson(
+    filename: Optional[str] = None,
+) -> Tuple[Optional[dict], Optional[str]]:
     """
     Load a dictionary from a JSON file.
 
     Args:
-        filename (Optional[str]): The name of the file. If None, a file dialog will open.
+        filename (Optional[str]): The name of the file. If None, a file dialog
+        will open.
 
     Returns:
-        Tuple[Optional[dict], Optional[str]]: The loaded data and the filename, or (None, None) if the operation was canceled.
+        Tuple[Optional[dict], Optional[str]]: The loaded data and the filename,
+        or (None, None) if the operation was canceled.
     """
     if filename is None:
-        infile = filedialog.askopenfile(filetypes=[("All Files", "*.*"), ("JSON", "*.json")])
+        infile = filedialog.askopenfile(
+            filetypes=[("All Files", "*.*"), ("JSON", "*.json")]
+        )
         if infile is None:
             return None, None
     else:

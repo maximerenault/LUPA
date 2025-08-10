@@ -1,7 +1,9 @@
 """
-Infix calculator for mathematical expressions with configurable constants and functions.
+Infix calculator for mathematical expressions with configurable constants and
+functions.
 
-This module provides a flexible mathematical expression calculator that supports:
+This module provides a flexible mathematical expression calculator that
+supports:
 - Basic arithmetic operations (+, -, *, /, **, %)
 - Mathematical functions (sin, cos, tan, abs, floor, etc.)
 - Custom constants and variables
@@ -29,7 +31,8 @@ Usage:
     >>> calc.calculate('2 * pi * R * C')
     0.006283185307179587
 
-Adapted from https://gist.github.com/baileyparker/309436dddf2f34f06cfc363aa5a6c86f
+Adapted from
+https://gist.github.com/baileyparker/309436dddf2f34f06cfc363aa5a6c86f
 
 EBNF formulation:
 
@@ -38,7 +41,8 @@ PrecedenceLast = ...
 Precedence4 = Precedence3 { ("+"|"-") Term } ;
 Precedence3 = Precedence2 { ("*"|"/"|"%") Precedence2 } ;
 Precedence2 = Precedence1 { ("**") Precedence1 } ;
-Precedence1 = Number | "(" PrecedenceLast ")" | Function "(" PrecedenceLast ")" | Constant | Variable ;
+Precedence1 = Number | "(" PrecedenceLast ")" | Function "(" PrecedenceLast ")"
+              | Constant | Variable ;
 
 Function = "sin" | "cos" | "tan" | "abs" ... ;
 Number = Integer { "." Integer } | "." Integer ;
@@ -48,7 +52,14 @@ Constant = "e" | "pi" ;
 Variable = "t" | ... ;
 """
 
-from typing import Iterable, List, Dict, Any, Union, Callable, Optional, Tuple, Generator, TypeVar
+from typing import (
+    Iterable,
+    List,
+    Dict,
+    Any,
+    Union,
+    Callable,
+)
 import numpy as np
 import operator as op
 from exceptions.calculatorexceptions import (
@@ -117,7 +128,7 @@ def flatten(iterable: Iterable):
         for x in iterable.values():
             newdict.update(x)
         return newdict
-    return [x for l in iterable for x in l]
+    return [x for el in iterable for x in el]
 
 
 def get_char(list_str: List, idx: int):
@@ -218,7 +229,8 @@ class Calculator:
         custom_variables: Dict[str, str] = None,
         custom_functions: Dict[str, Callable[[float], float]] = None,
     ):
-        """Initialize calculator with optional custom constants, variables, and functions.
+        """Initialize calculator with optional custom constants, variables, and
+        functions.
 
         Args:
             custom_constants (dict, optional): Additional constants to include
@@ -247,7 +259,12 @@ class Calculator:
 
     def _update_tokens(self):
         """Update all_tokens and all_chars based on current configuration."""
-        self.all_tokens = list(self.functions) + list(flatten(operators)) + list(self.constants) + list(self.variables)
+        self.all_tokens = (
+            list(self.functions)
+            + list(flatten(operators))
+            + list(self.constants)
+            + list(self.variables)
+        )
         self.all_chars = "".join(self.all_tokens) + "0123456789.e-+()"
 
     def is_protected_constant(self, name: str) -> bool:
@@ -271,7 +288,7 @@ class Calculator:
                 raise ValueError(f"Variable '{name}' already exists.")
             self.variables[name] = expr
         self._update_tokens()
-    
+
     def add_functions(self, functions: Dict[str, Callable[[float], float]]):
         """Add multiple functions to the calculator."""
         for name, func in functions.items():
@@ -281,12 +298,15 @@ class Calculator:
         self._update_tokens()
 
     def set_constant(self, name: str, value: Union[int, float]):
-        """Create or update a constant. Protected constants are read-only (cannot be changed)."""
+        """Create or update a constant. Protected constants are read-only
+        (cannot be changed)."""
         if name in self._protected_constants:
             # Allow no-op set to same value, but block changes
             current = self.constants.get(name)
             if current is None or float(value) != float(current):
-                raise ValueError(f"Constant '{name}' is read-only and cannot be modified.")
+                raise ValueError(
+                    f"Constant '{name}' is read-only and cannot be modified."
+                )
             return
         try:
             num_val = float(value)
@@ -296,11 +316,14 @@ class Calculator:
         self._update_tokens()
 
     def set_variable(self, name: str, expr: str):
-        """Create or update a variable token. Protected variables are read-only (cannot be changed)."""
+        """Create or update a variable token. Protected variables are read-only
+        (cannot be changed)."""
         if name in self._protected_variables:
             current = self.variables.get(name)
             if current is None or expr != current:
-                raise ValueError(f"Variable '{name}' is read-only and cannot be modified.")
+                raise ValueError(
+                    f"Variable '{name}' is read-only and cannot be modified."
+                )
             return
         self.variables[name] = expr
         self._update_tokens()
@@ -320,7 +343,6 @@ class Calculator:
         if name in self.variables:
             del self.variables[name]
             self._update_tokens()
-
 
     def calculate(self, expression: str, return_vars: bool = False):
         """Evaluates a mathematical expression and returns the result.
@@ -453,7 +475,8 @@ class Scanner(BaseParser):
                 raise BadNumberError(number)
 
     def _take_function_operator_variable(self):
-        """Yields a single function, operator or variable if there is one next in the input."""
+        """Yields a single function, operator or variable if there is one next
+        in the input."""
         gen = is_char_inorder(self.calc.all_tokens)
 
         def check(c):
@@ -466,7 +489,9 @@ class Scanner(BaseParser):
         fov = "".join(self._take(check))
         if fov:
             if fov not in self.calc.all_tokens:
-                complete_fov = fov + "".join(self._take(lambda c: c in "abcdefghijklmnopqrstuvwxyz0123456789"))
+                complete_fov = fov + "".join(
+                    self._take(lambda c: c in "abcdefghijklmnopqrstuvwxyz0123456789")
+                )
                 raise BadFunctionError(complete_fov, self.calc.all_tokens)
             yield fov
 
@@ -496,13 +521,16 @@ class Parser(BaseParser):
         if precedence == PREC_EXPONENTIATION:
             parse = self._parse_factor
         else:
-            parse = lambda: self._parse_expression(precedence - 1)
+
+            def parse():
+                return self._parse_expression(precedence - 1)
 
         # Parse the first (required) Factor
         factors = [parse()]
         # Parse any following ("op") Factor
-        ops = lambda t: t in operators[precedence]
-        factors += flatten((op, parse()) for op in self._take(ops))
+        factors += flatten(
+            (op, parse()) for op in self._take(lambda t: t in operators[precedence])
+        )
 
         return evaluate(factors)
 
@@ -512,7 +540,8 @@ class Parser(BaseParser):
         >>> Parser([1])._parse_factor()
         1
 
-        >>> Parser(['(', 1, '+', 2, '*', 'abs', '(', '-', 3, ')', ')'])._parse_factor()
+        >>> Parser(['(', 1, '+', 2, '*', 'abs',\
+            '(', '-', 3, ')', ')'])._parse_factor()
         7
         """
         for value in self._take(lambda t: isinstance(t, float)):
@@ -566,7 +595,8 @@ class Parser(BaseParser):
 
 
 def calculate(expression: str, return_vars: bool = False):
-    """Evaluates a mathematical expression and returns the result using the global calculator.
+    """Evaluates a mathematical expression and returns the result using the
+    global calculator.
 
     Args:
         expression (str): Mathematical expression to evaluate

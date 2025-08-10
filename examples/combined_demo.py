@@ -6,12 +6,7 @@ Demonstrates the integration of calculator functionality with circuit analysis
 import json
 import numpy as np
 import matplotlib.pyplot as plt
-import sys
 import os
-
-# Add parent directory to path to import LUPA modules
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 from utils.calculator import Calculator
 
 
@@ -90,7 +85,7 @@ def demo_frequency_response():
 
     # Calculate cutoff frequency
     fc = calc.calculate("1 / (2 * pi * R * C)")
-    print(f"RC Circuit Parameters:")
+    print("RC Circuit Parameters:")
     print(f"R = {R} Ω")
     print(f"C = {C*1e6} µF")
     print(f"Cutoff frequency: {fc:.1f} Hz")
@@ -116,8 +111,9 @@ def demo_frequency_response():
         calc.functions["log10"] = np.log10
         calc._update_tokens()
 
-        magnitude = calc.calculate("1 / (1 + (omega * R * C) ** 2) ** 0.5")
-        magnitude_db = calc.calculate("20 * log10(1 / (1 + (omega * R * C) ** 2) ** 0.5)")
+        magnitude_db = calc.calculate(
+            "20 * log10(1 / (1 + (omega * R * C) ** 2) ** 0.5)"
+        )
         phase = calc.calculate("-atan(omega * R * C) * 180 / pi")
 
         magnitudes.append(magnitude_db)
@@ -137,7 +133,9 @@ def demo_frequency_response():
         calc.constants["omega"] = 2 * np.pi * f
         calc._update_tokens()
 
-        magnitude_db = calc.calculate("20 * log10(1 / (1 + (omega * R * C) ** 2) ** 0.5)")
+        magnitude_db = calc.calculate(
+            "20 * log10(1 / (1 + (omega * R * C) ** 2) ** 0.5)"
+        )
         phase = calc.calculate("-atan(omega * R * C) * 180 / pi")
 
         magnitudes.append(magnitude_db)
@@ -189,13 +187,15 @@ def demo_circuit_optimization():
     Vcc = 5.0
     R1 = 1000
 
-    calc = Calculator(custom_constants={"Vcc": Vcc, "R1": R1, "Vtarget": target_voltage})
+    calc = Calculator(
+        custom_constants={"Vcc": Vcc, "R1": R1, "Vtarget": target_voltage}
+    )
 
     # Solve for R2: Vout = Vcc * R2 / (R1 + R2) = Vtarget
     # Rearranging: R2 = R1 * Vtarget / (Vcc - Vtarget)
     R2_optimal = calc.calculate("R1 * Vtarget / (Vcc - Vtarget)")
 
-    print(f"Voltage Divider Optimization:")
+    print("Voltage Divider Optimization:")
     print(f"Target output: {target_voltage}V from {Vcc}V supply")
     print(f"Given R1 = {R1}Ω")
     print(f"Calculated optimal R2 = {R2_optimal:.1f}Ω")
@@ -218,7 +218,7 @@ def demo_circuit_optimization():
     power_total = calc.calculate("power_R1 + power_R2")
     calc.add_constants({"power_total": power_total})
 
-    print(f"Power Analysis:")
+    print("Power Analysis:")
     print(f"Current: {current:.6f}A")
     print(f"Power in R1: {power_R1:.6f}W")
     print(f"Power in R2: {power_R2:.6f}W")
@@ -261,7 +261,7 @@ def load_and_enhance_circuit(filename):
         if "R1" in constants and "R2" in constants and "V1" in constants:
             Vout = calc.calculate("V1 * R2 / (R1 + R2)")
             efficiency = calc.calculate("(V1 * R2 / (R1 + R2)) / V1 * 100")
-            print(f"Enhanced Analysis Results:")
+            print("Enhanced Analysis Results:")
             print(f"Output voltage: {Vout:.3f}V")
             print(f"Efficiency: {efficiency:.1f}%")
 
@@ -269,7 +269,7 @@ def load_and_enhance_circuit(filename):
         if "R1" in constants and "C1" in constants:
             tau = calc.calculate("R1 * C1")
             freq_3db = calc.calculate("1 / (2 * pi * R1 * C1)")
-            print(f"Enhanced Analysis Results:")
+            print("Enhanced Analysis Results:")
             print(f"Time constant: {tau:.6g}s")
             print(f"3dB frequency: {freq_3db:.3f}Hz")
 

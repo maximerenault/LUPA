@@ -17,7 +17,7 @@ except Exception:
 try:
     from platformdirs import user_data_dir
 except Exception:
-    # Minimal fallback for environments without platformdirs (should be installed via pyproject)
+    # Minimal fallback for environments without platformdirs
     def user_data_dir(appname: str, appauthor: bool = False):
         return os.path.join(os.path.expanduser("~/.local/share"), appname)
 
@@ -83,19 +83,29 @@ class MainWindow(tk.Tk):
         self._rebuild_recent_menu()
 
         menu_file.add_command(label="Open", command=self.open_file)
-        menu_file.add_command(label="Save", command=self.save_file, accelerator="Ctrl+s")
-        menu_file.add_command(label="Close", command=self.close_file, accelerator="Ctrl+x")
+        menu_file.add_command(
+            label="Save", command=self.save_file, accelerator="Ctrl+s"
+        )
+        menu_file.add_command(
+            label="Close", command=self.close_file, accelerator="Ctrl+x"
+        )
         self.bind("<Control-s>", lambda e: self.save_file(self.filename))
         self.bind("<Control-o>", lambda e: self.open_most_recent_file())
         self.bind("<Control-x>", lambda e: self.close_file())
 
     def _rebuild_recent_menu(self):
         self.menu_recent.delete(0, "end")
-        existing = [f for f in self.recent_files if isinstance(f, str) and os.path.exists(f)]
+        existing = [
+            f for f in self.recent_files if isinstance(f, str) and os.path.exists(f)
+        ]
         self.recent_files = existing[-self.MAX_RECENT_FILES :]
         for i, f in enumerate(reversed(self.recent_files)):
             accelerator = "Ctrl+o" if i == 0 else None
-            self.menu_recent.add_command(label=os.path.basename(f), command=lambda f=f: self.open_file(f), accelerator=accelerator)
+            self.menu_recent.add_command(
+                label=os.path.basename(f),
+                command=lambda f=f: self.open_file(f),
+                accelerator=accelerator,
+            )
 
     def read_recent_files(self):
         try:
@@ -165,16 +175,15 @@ def main():
     logging.basicConfig(level=logging.INFO, format="%(levelname)s:%(name)s:%(message)s")
     logger = logging.getLogger(APP_NAME)
 
-    parser = argparse.ArgumentParser(description=f"{APP_NAME} - Lumped-Parameter Analysis", prog="lupa")
-    parser.add_argument("--version", action="version", version=f"{APP_NAME} {APP_VERSION}")
+    parser = argparse.ArgumentParser(
+        description=f"{APP_NAME} - Lumped-Parameter Analysis", prog="lupa"
+    )
+    parser.add_argument(
+        "--version", action="version", version=f"{APP_NAME} {APP_VERSION}"
+    )
     parser.add_argument("file", nargs="?", help="Circuit file to open on startup")
-    parser.add_argument("--no-gui", action="store_true", help="Run in command-line mode (not yet implemented)")
 
     args = parser.parse_args()
-
-    if args.no_gui:
-        logger.info("Command-line mode not yet implemented. Use 'lupa' without --no-gui to start the GUI application.")
-        return
 
     try:
         root = MainWindow()

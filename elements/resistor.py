@@ -13,7 +13,18 @@ class Resistor(Wire):
         x0, y0, x1, y1, x2, y2, x3, y3 = drbd.coord2pix(self.get_rect_coords())
         self.ids.append(
             drbd.canvas.create_polygon(
-                x0, y0, x1, y1, x2, y2, x3, y3, fill="white", outline="black", width=2, tags="circuit"
+                x0,
+                y0,
+                x1,
+                y1,
+                x2,
+                y2,
+                x3,
+                y3,
+                fill="white",
+                outline="black",
+                width=2,
+                tags="circuit",
             )
         )
         self.afterdraw(drbd)
@@ -30,10 +41,10 @@ class Resistor(Wire):
         h = 0.3
         coords = self.getcoords()
         vec = coords[2:] - coords[:2]
-        l = np.linalg.norm(vec)
-        if l == 0:
+        length = np.linalg.norm(vec)
+        if length == 0:
             return np.concatenate((coords, coords))
-        vec = vec / l
+        vec = vec / length
         vor = np.array([-vec[1], vec[0]])
         mid = (coords[2:] + coords[:2]) / 2
         p0 = mid - w / 2 * vec + h / 2 * vor

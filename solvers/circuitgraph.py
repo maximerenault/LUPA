@@ -20,7 +20,7 @@ class CircuitGraph:
     def convert_circuit_to_graph(self, cnodes: list[Node], celems: list[Wire]):
         cnodes = sorted(cnodes)
         nodes, edges = [], []
-        edgedict = {celem: [-1, -1] for celem in celems if type(celem) != Wire}
+        edgedict = {celem: [-1, -1] for celem in celems if type(celem) is not Wire}
 
         while len(cnodes) > 0:
             # extract first sublist of identical nodes
@@ -36,15 +36,16 @@ class CircuitGraph:
                     nodes[-1].listened = True
                     nodes[-1].listener_name = cnode.listener_name
                 celem = cnode.elems[0]
-                if type(celem) == Wire:
+                if type(celem) is Wire:
                     # if we reach a wire, we collapse it
                     otherend = celem.get_other_end(cnode)
                     if otherend.listened:
                         nodes[-1].listened = True
                     idstart = bisect_left(cnodes, otherend)
                     idend = bisect_right(cnodes, otherend)
-                    # we prevent going back through the same wire by removing the node
-                    # can't use list.remove because two nodes are equal if they have the same coords
+                    # we prevent going back through the same wire by removing the node.
+                    # we can't use list.remove because two nodes are equal if they have
+                    # the same coords.
                     for i in range(idstart, idend):
                         if cnodes[i].elems[0] == celem:
                             del cnodes[i]
@@ -58,7 +59,7 @@ class CircuitGraph:
                         nodes[-1].set_type("Source")
 
         for celem in celems:
-            if type(celem) != Wire:
+            if type(celem) is not Wire:
                 start = edgedict[celem][0]
                 end = edgedict[celem][1]
                 edges.append(GraphEdge(start, end, celem))

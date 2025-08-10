@@ -4,12 +4,7 @@ Demonstrates loading and analyzing circuit JSON files with LUPA
 """
 
 import json
-import sys
 import os
-
-# Add parent directory to path to import LUPA modules
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 from utils.calculator import Calculator
 
 
@@ -186,7 +181,11 @@ def analyze_bridge_circuit():
 
 def list_available_circuits():
     """List all available circuit files."""
-    circuit_files = ["simple_rc_circuit.json", "voltage_divider.json", "bridge_circuit.json"]
+    circuit_files = [
+        "simple_rc_circuit.json",
+        "voltage_divider.json",
+        "bridge_circuit.json",
+    ]
 
     print("=== Available Circuit Examples ===")
     for filename in circuit_files:

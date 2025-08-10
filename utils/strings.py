@@ -82,11 +82,11 @@ def check_strfloat_pos(strin: str) -> str:
     isdot = False
     for c in strin:
         if c.isdigit():
-            if isdot == False:
+            if isdot is False:
                 integer += c
-            if isdot == True:
+            if isdot is True:
                 decimal += c
-        if c == "." and isdot == False:
+        if c == "." and isdot is False:
             dot = "."
             isdot = True
     if integer != "":

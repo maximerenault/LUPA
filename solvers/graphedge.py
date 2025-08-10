@@ -8,7 +8,7 @@ class GraphEdge:
         self.elem = elem
 
     def __str__(self):
-        lastr = repr(self.elem)+ "[" + str(self.start) + "," + str(self.end) + "]"
+        lastr = repr(self.elem) + "[" + str(self.start) + "," + str(self.end) + "]"
         return lastr
 
     def __repr__(self):

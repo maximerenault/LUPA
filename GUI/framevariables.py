@@ -21,9 +21,15 @@ class FrameVariables(ttk.Frame):
         self.tree.grid(row=0, column=0, columnspan=2, sticky="nsew")
 
         # Buttons to add and remove constants/variables
-        self.add_const_btn = ttk.Button(self, text="+ Constant", command=self.add_constant)
-        self.add_var_btn = ttk.Button(self, text="+ Variable", command=self.add_variable)
-        self.remove_btn = ttk.Button(self, text="- Remove", command=self.remove_selected)
+        self.add_const_btn = ttk.Button(
+            self, text="+ Constant", command=self.add_constant
+        )
+        self.add_var_btn = ttk.Button(
+            self, text="+ Variable", command=self.add_variable
+        )
+        self.remove_btn = ttk.Button(
+            self, text="- Remove", command=self.remove_selected
+        )
 
         self.add_const_btn.grid(row=1, column=0, sticky="ew")
         self.add_var_btn.grid(row=1, column=1, sticky="ew")
@@ -104,7 +110,9 @@ class FrameVariables(ttk.Frame):
             return
         parent = self.tree.parent(elem_iid)
         name = self.tree.item(elem_iid).get("text", "")
-        if (parent == "const" and calculator.is_protected_constant(name)) or (parent == "var" and calculator.is_protected_variable(name)):
+        if (parent == "const" and calculator.is_protected_constant(name)) or (
+            parent == "var" and calculator.is_protected_variable(name)
+        ):
             return
         self.enter_edition(elem_iid)
 
@@ -120,14 +128,26 @@ class FrameVariables(ttk.Frame):
         name_entry.select_range(0, tk.END)
         value_entry.select_range(0, tk.END)
         name_entry.focus()
-        name_entry.bind("<FocusOut>", lambda e: self.on_focus_out(e, iid, name_entry, value_entry))
-        name_entry.bind("<Return>", lambda e: self.on_enter_press(e, iid, name_entry, value_entry))
-        value_entry.bind("<FocusOut>", lambda e: self.on_focus_out(e, iid, name_entry, value_entry))
-        value_entry.bind("<Return>", lambda e: self.on_enter_press(e, iid, name_entry, value_entry))
+        name_entry.bind(
+            "<FocusOut>", lambda e: self.on_focus_out(e, iid, name_entry, value_entry)
+        )
+        name_entry.bind(
+            "<Return>", lambda e: self.on_enter_press(e, iid, name_entry, value_entry)
+        )
+        value_entry.bind(
+            "<FocusOut>", lambda e: self.on_focus_out(e, iid, name_entry, value_entry)
+        )
+        value_entry.bind(
+            "<Return>", lambda e: self.on_enter_press(e, iid, name_entry, value_entry)
+        )
         name_entry.place(x=bbox[0], y=bbox[1], width=bbox[2] // 2, height=bbox[3])
-        value_entry.place(x=bbox[0] + bbox[2] // 2, y=bbox[1], width=bbox[2] // 2, height=bbox[3])
+        value_entry.place(
+            x=bbox[0] + bbox[2] // 2, y=bbox[1], width=bbox[2] // 2, height=bbox[3]
+        )
 
-    def on_focus_out(self, event: tk.Event, iid: str, name_entry: ttk.Entry, value_entry: ttk.Entry):
+    def on_focus_out(
+        self, event: tk.Event, iid: str, name_entry: ttk.Entry, value_entry: ttk.Entry
+    ):
         if event.widget.focus_get() in [name_entry, value_entry]:
             return
         name_entry.destroy()
@@ -135,7 +155,9 @@ class FrameVariables(ttk.Frame):
         self.tree.focus(iid)
         self.tree.selection_set(iid)
 
-    def on_enter_press(self, event: tk.Event, iid: str, name_entry: ttk.Entry, value_entry: ttk.Entry):
+    def on_enter_press(
+        self, event: tk.Event, iid: str, name_entry: ttk.Entry, value_entry: ttk.Entry
+    ):
         new_name = name_entry.get()
         new_value = value_entry.get()
         self.edit_variable(iid, new_name, new_value)
@@ -161,7 +183,9 @@ class FrameVariables(ttk.Frame):
                 return
         elif elem_parent == "var":
             try:
-                new_expr = value if value != "" else (old_item.get("values", [""])[0] or name)
+                new_expr = (
+                    value if value != "" else (old_item.get("values", [""])[0] or name)
+                )
                 if name != old_name and old_name:
                     calculator.remove_variable(old_name)
                 calculator.set_variable(name, new_expr)
@@ -173,12 +197,10 @@ class FrameVariables(ttk.Frame):
     def reinitialize(self):
         self.cC = 0
         self.cV = 0
-        # Clear UI items under constants and variables (keep headers)
         for child in list(self.tree.get_children("const")):
             self.tree.delete(child)
         for child in list(self.tree.get_children("var")):
             self.tree.delete(child)
-        # Do not modify the global calculator here; caller can repopulate via initialize_from_calculator()
 
     def save_variables(self, data: dict):
         data["constants"] = {}

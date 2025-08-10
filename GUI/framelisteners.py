@@ -105,13 +105,13 @@ class FrameListeners(ttk.Treeview):
     def get_elem_iid(self, elem):
         try:
             return self.Qlisteners[elem]
-        except:
+        except KeyError:
             return ""
 
     def get_node_iid(self, node):
         try:
             return self.Plisteners[node]
-        except:
+        except KeyError:
             return ""
 
     def on_motion(self, event):

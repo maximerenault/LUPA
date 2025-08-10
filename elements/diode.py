@@ -13,10 +13,21 @@ class Diode(Wire):
         x0, y0, x1, y1, x2, y2, x3, y3, x4, y4 = drbd.coord2pix(self.get_diode_coords())
         self.ids.append(
             drbd.canvas.create_polygon(
-                x0, y0, x1, y1, x2, y2, fill="white", outline="black", width=2, tags="circuit"
+                x0,
+                y0,
+                x1,
+                y1,
+                x2,
+                y2,
+                fill="white",
+                outline="black",
+                width=2,
+                tags="circuit",
             )
         )
-        self.ids.append(drbd.canvas.create_line(x3, y3, x4, y4, width=2, tags="circuit"))
+        self.ids.append(
+            drbd.canvas.create_line(x3, y3, x4, y4, width=2, tags="circuit")
+        )
         self.afterdraw(drbd)
 
     def redraw(self, drbd):
@@ -32,10 +43,10 @@ class Diode(Wire):
         h = 0.45
         coords = self.getcoords()
         vec = coords[2:] - coords[:2]
-        l = np.linalg.norm(vec)
-        if l == 0:
+        length = np.linalg.norm(vec)
+        if length == 0:
             return np.concatenate((coords, coords, coords[0:2]))
-        vec = vec / l
+        vec = vec / length
         vor = np.array([-vec[1], vec[0]])
         mid = (coords[2:] + coords[:2]) / 2
         p0 = mid - w / 2 * vec + h / 2 * vor

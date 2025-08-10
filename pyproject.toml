@@ -86,7 +86,7 @@ exclude = ["deprecated*"]
 "*" = ["*.png", "*.ico", "*.json", "*.msh", "*.log"]
 
 [tool.black]
-line-length = 120
+line-length = 88
 target-version = ['py38']
 include = '\.pyi?$'
 extend-exclude = '''

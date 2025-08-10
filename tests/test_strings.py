@@ -1,6 +1,4 @@
 import unittest
-from io import StringIO
-import sys
 from utils.strings import check_strint, check_strfloat, check_strfloat_pos
 
 

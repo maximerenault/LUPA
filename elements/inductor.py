@@ -11,18 +11,58 @@ class Inductor(Wire):
         self.widths = [1, 1, 2, 2, 2]
 
     def draw(self, drbd):
-        x0, y0, x1, y1, x2, y2, x3, y3, x4, y4, x5, y5, x6, y6, x7, y7 = drbd.coord2pix(self.get_ind_coords())
+        x0, y0, x1, y1, x2, y2, x3, y3, x4, y4, x5, y5, x6, y6, x7, y7 = drbd.coord2pix(
+            self.get_ind_coords()
+        )
         x00, y00, x10, y10 = drbd.coord2pix(self.getcoords())
         angle = int(180 * self.get_ind_angle() / np.pi)
         self.ids.append(drbd.canvas.create_line(x00, y00, x6, y6, tags="circuit"))
         self.ids.append(drbd.canvas.create_line(x10, y10, x7, y7, tags="circuit"))
-        self.ids.append(drbd.canvas.create_arc(x0, y0, x1, y1, width=2, tags="circuit", style=tk.ARC, extent=180, start=angle))
-        self.ids.append(drbd.canvas.create_arc(x2, y2, x3, y3, width=2, tags="circuit", style=tk.ARC, extent=180, start=angle))
-        self.ids.append(drbd.canvas.create_arc(x4, y4, x5, y5, width=2, tags="circuit", style=tk.ARC, extent=180, start=angle))
+        self.ids.append(
+            drbd.canvas.create_arc(
+                x0,
+                y0,
+                x1,
+                y1,
+                width=2,
+                tags="circuit",
+                style=tk.ARC,
+                extent=180,
+                start=angle,
+            )
+        )
+        self.ids.append(
+            drbd.canvas.create_arc(
+                x2,
+                y2,
+                x3,
+                y3,
+                width=2,
+                tags="circuit",
+                style=tk.ARC,
+                extent=180,
+                start=angle,
+            )
+        )
+        self.ids.append(
+            drbd.canvas.create_arc(
+                x4,
+                y4,
+                x5,
+                y5,
+                width=2,
+                tags="circuit",
+                style=tk.ARC,
+                extent=180,
+                start=angle,
+            )
+        )
         self.afterdraw(drbd)
 
     def redraw(self, drbd):
-        x0, y0, x1, y1, x2, y2, x3, y3, x4, y4, x5, y5, x6, y6, x7, y7 = drbd.coord2pix(self.get_ind_coords())
+        x0, y0, x1, y1, x2, y2, x3, y3, x4, y4, x5, y5, x6, y6, x7, y7 = drbd.coord2pix(
+            self.get_ind_coords()
+        )
         x00, y00, x10, y10 = drbd.coord2pix(self.getcoords())
         angle = int(180 * self.get_ind_angle() / np.pi)
         drbd.canvas.coords(self.ids[0], x00, y00, x6, y6)
@@ -37,13 +77,12 @@ class Inductor(Wire):
 
     def get_ind_coords(self):
         w = self.w
-        h = self.h
         coords = self.getcoords()
         vec = coords[2:] - coords[:2]
-        l = np.linalg.norm(vec)
-        if l == 0:
+        length = np.linalg.norm(vec)
+        if length == 0:
             return np.concatenate((coords, coords, coords, coords))
-        vec = vec / l
+        vec = vec / length
         mid = (coords[2:] + coords[:2]) / 2
         ce1 = mid - w / 3 * vec
         ce2 = mid

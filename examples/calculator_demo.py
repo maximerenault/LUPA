@@ -6,12 +6,6 @@ and complex mathematical expressions for circuit analysis.
 
 import numpy as np
 import matplotlib.pyplot as plt
-import sys
-import os
-
-# Add parent directory to path to import LUPA modules
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 from utils.calculator import Calculator
 
 
@@ -21,7 +15,17 @@ def demo_basic_calculator():
     from utils.calculator import calculate  # Using global calculator
 
     # Basic operations
-    expressions = ["2 + 3 * 4", "(2 + 3) * 4", "2 ** 3", "sin(pi / 2)", "cos(0)", "abs(-5)", "floor(3.9)", "e ** 2", "2 * pi"]
+    expressions = [
+        "2 + 3 * 4",
+        "(2 + 3) * 4",
+        "2 ** 3",
+        "sin(pi / 2)",
+        "cos(0)",
+        "abs(-5)",
+        "floor(3.9)",
+        "e ** 2",
+        "2 * pi",
+    ]
 
     for expr in expressions:
         result = calculate(expr)
@@ -109,14 +113,14 @@ def demo_variable_expressions():
 
     # Simple variable expression
     expr, vars = calc.calculate("2 * t + 5", return_vars=True)
-    print(f"Expression: 2 * t + 5")
+    print("Expression: 2 * t + 5")
     print(f"Variables used: {vars}")
     print(f"f(3) = {expr(3)}")
     print(f"f(10) = {expr(10)}")
 
     # Quadratic expression
     expr2, vars2 = calc.calculate("t ** 2 - 3 * t + 2", return_vars=True)
-    print(f"\nExpression: t² - 3t + 2")
+    print("\nExpression: t² - 3t + 2")
     print(f"Variables used: {vars2}")
     for t_val in [0, 1, 2, 3]:
         print(f"f({t_val}) = {expr2(t_val)}")

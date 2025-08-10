@@ -1,14 +1,11 @@
-from matplotlib.figure import Figure
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from GUI.framebase import FrameBase
 from tkinter import ttk
 import tkinter as tk
-import networkx as nx
 import matplotlib
-from exceptions.solveframeexceptions import *
+from exceptions.solveframeexceptions import BadNumberError
 from solvers.circuitgraph import CircuitGraph
 from solvers.circuitsolver import CircuitSolver
-from utils.strings import *
+from utils.strings import check_strfloat_pos
 
 matplotlib.use("TkAgg")
 
@@ -29,22 +26,61 @@ class FrameSolve(ttk.Frame):
 
         self.widget_configs = {
             "Clear": {
-                "layout": {"labpanel": {"type": "label", "grid": {"row": 0, "column": 0}}},
-                "rowcol_weights": {"rows": [0], "rowweights": [1], "cols": [0], "colweights": [1]},
+                "layout": {
+                    "labpanel": {"type": "label", "grid": {"row": 0, "column": 0}}
+                },
+                "rowcol_weights": {
+                    "rows": [0],
+                    "rowweights": [1],
+                    "cols": [0],
+                    "colweights": [1],
+                },
             },
             "Solver": {
                 "layout": {
-                    "labpanel": {"type": "label", "grid": {"row": 0, "column": 0, "columnspan": 2, "sticky": "ew"}},
+                    "labpanel": {
+                        "type": "label",
+                        "grid": {
+                            "row": 0,
+                            "column": 0,
+                            "columnspan": 2,
+                            "sticky": "ew",
+                        },
+                    },
                     "labdt": {"type": "label", "grid": {"row": 1, "column": 0}},
                     "timestep": {"type": "entry", "grid": {"row": 1, "column": 1}},
                     "labmaxtime": {"type": "label", "grid": {"row": 2, "column": 0}},
                     "maxtime": {"type": "entry", "grid": {"row": 2, "column": 1}},
                     "labtimeint": {"type": "label", "grid": {"row": 3, "column": 0}},
-                    "time integration": {"type": "combobox", "grid": {"row": 3, "column": 1}},
-                    "Solve": {"type": "button", "grid": {"row": 4, "column": 0, "columnspan": 2, "sticky": "ew"}},
-                    "ExportMat": {"type": "button", "grid": {"row": 5, "column": 0, "columnspan": 2, "sticky": "ew"}},
+                    "time integration": {
+                        "type": "combobox",
+                        "grid": {"row": 3, "column": 1},
+                    },
+                    "Solve": {
+                        "type": "button",
+                        "grid": {
+                            "row": 4,
+                            "column": 0,
+                            "columnspan": 2,
+                            "sticky": "ew",
+                        },
+                    },
+                    "ExportMat": {
+                        "type": "button",
+                        "grid": {
+                            "row": 5,
+                            "column": 0,
+                            "columnspan": 2,
+                            "sticky": "ew",
+                        },
+                    },
                 },
-                "rowcol_weights": {"rows": [], "rowweights": [], "cols": [1], "colweights": [1]},
+                "rowcol_weights": {
+                    "rows": [],
+                    "rowweights": [],
+                    "cols": [1],
+                    "colweights": [1],
+                },
             },
         }
 
@@ -56,12 +92,21 @@ class FrameSolve(ttk.Frame):
         }
 
         self.entry_options = {
-            "timestep": {"bindfunc": self.update_timestep, "insert": self.csolver.get_dt()},
-            "maxtime": {"bindfunc": self.update_maxtime, "insert": self.csolver.get_maxtime()},
+            "timestep": {
+                "bindfunc": self.update_timestep,
+                "insert": self.csolver.get_dt(),
+            },
+            "maxtime": {
+                "bindfunc": self.update_maxtime,
+                "insert": self.csolver.get_maxtime(),
+            },
         }
 
         self.cbbox_options = {
-            "time integration": {"values": self.csolver.time_integrations, "bindfunc": self.update_time_integration},
+            "time integration": {
+                "values": self.csolver.time_integrations,
+                "bindfunc": self.update_time_integration,
+            },
         }
 
         self.plot_options = {
@@ -87,7 +132,7 @@ class FrameSolve(ttk.Frame):
         try:
             dt = float(dtstr)
             self.csolver.set_dt(dt)
-        except:
+        except (ValueError, TypeError):
             raise BadNumberError(dtstr)
 
     def update_maxtime(self, stringvar):
@@ -101,7 +146,7 @@ class FrameSolve(ttk.Frame):
         try:
             mt = float(mtstr)
             self.csolver.set_maxtime(mt)
-        except:
+        except (ValueError, TypeError):
             raise BadNumberError(mtstr)
 
     def update_time_integration(self, event: tk.Event):

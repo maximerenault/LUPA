@@ -15,9 +15,15 @@ class Capacitor(Wire):
         y01 = (y0 + y3) / 2
         x11 = (x1 + x2) / 2
         y11 = (y1 + y2) / 2
-        x0, y0, x1, y1, x2, y2, x3, y3 = drbd.coord2pix(np.array([x0, y0, x1, y1, x2, y2, x3, y3]))
-        self.ids.append(drbd.canvas.create_line(x0, y0, x3, y3, width=2, tags="circuit"))
-        self.ids.append(drbd.canvas.create_line(x1, y1, x2, y2, width=2, tags="circuit"))
+        x0, y0, x1, y1, x2, y2, x3, y3 = drbd.coord2pix(
+            np.array([x0, y0, x1, y1, x2, y2, x3, y3])
+        )
+        self.ids.append(
+            drbd.canvas.create_line(x0, y0, x3, y3, width=2, tags="circuit")
+        )
+        self.ids.append(
+            drbd.canvas.create_line(x1, y1, x2, y2, width=2, tags="circuit")
+        )
 
         x01, y01, x11, y11 = drbd.coord2pix(np.array([x01, y01, x11, y11]))
         x00, y00, x10, y10 = drbd.coord2pix(self.getcoords())
@@ -31,7 +37,9 @@ class Capacitor(Wire):
         y01 = (y0 + y3) / 2
         x11 = (x1 + x2) / 2
         y11 = (y1 + y2) / 2
-        x0, y0, x1, y1, x2, y2, x3, y3 = drbd.coord2pix(np.array([x0, y0, x1, y1, x2, y2, x3, y3]))
+        x0, y0, x1, y1, x2, y2, x3, y3 = drbd.coord2pix(
+            np.array([x0, y0, x1, y1, x2, y2, x3, y3])
+        )
         drbd.canvas.coords(self.ids[0], x0, y0, x3, y3)
         drbd.canvas.coords(self.ids[1], x1, y1, x2, y2)
 
@@ -47,10 +55,10 @@ class Capacitor(Wire):
         h = self.h
         coords = self.getcoords()
         vec = coords[2:] - coords[:2]
-        l = np.linalg.norm(vec)
-        if l == 0:
+        length = np.linalg.norm(vec)
+        if length == 0:
             return np.concatenate((coords, coords))
-        vec = vec / l
+        vec = vec / length
         vor = np.array([-vec[1], vec[0]])
         mid = (coords[2:] + coords[:2]) / 2
         p0 = mid - w / 2 * vec + h / 2 * vor

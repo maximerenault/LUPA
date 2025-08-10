@@ -1,0 +1,11 @@
+[flake8]
+max-line-length = 88
+extend-ignore = E203
+exclude = 
+    deprecated/,
+    __pycache__/,
+    *.egg-info/,
+    .git/,
+    .pytest_cache/,
+    build/,
+    dist/

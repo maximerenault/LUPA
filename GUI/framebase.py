@@ -123,13 +123,19 @@ class FrameBase(ttk.Frame):
 
     def create_button(self, key, options, grid_options):
         """Creates and places a button widget."""
-        button = ttk.Button(self, text=options.get("text", ""), command=options.get("bindfunc", lambda: None))
+        button = ttk.Button(
+            self,
+            text=options.get("text", ""),
+            command=options.get("bindfunc", lambda: None),
+        )
         button.grid(**grid_options)
         self.buttons[key] = button
 
     def create_combobox(self, key, options, grid_options):
         """Creates and places a combobox widget."""
-        combobox = ttk.Combobox(self, values=options.get("values", []), state="readonly")
+        combobox = ttk.Combobox(
+            self, values=options.get("values", []), state="readonly"
+        )
         combobox.grid(**grid_options)
         combobox.current(0)
         combobox.bind("<<ComboboxSelected>>", options.get("bindfunc", lambda _: None))

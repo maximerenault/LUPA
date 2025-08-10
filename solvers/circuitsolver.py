@@ -56,12 +56,12 @@ class CircuitSolver:
         for i in range(self.nbP):
             try:
                 names.append(self.listened[i])
-            except:
+            except KeyError:
                 names.append("P" + str(i))
         for i in range(self.nbQ):
             try:
                 names.append(self.listened[self.nbP + i])
-            except:
+            except KeyError:
                 names.append("Q" + str(self.nbP + i))
         np.savetxt(
             fname,
@@ -89,7 +89,12 @@ class CircuitSolver:
         )
 
     def solve(
-        self, nbP: int, nbQ: int, nodes: list[GraphNode], paths: list[list[GraphEdge]], startends: list[list[int]]
+        self,
+        nbP: int,
+        nbQ: int,
+        nodes: list[GraphNode],
+        paths: list[list[GraphEdge]],
+        startends: list[list[int]],
     ) -> int:
         """
         Method that takes all the steps to solve the system:
@@ -106,7 +111,9 @@ class CircuitSolver:
         if cns:
             return cns
         nodes, paths, startends = self.delete_node_sources(
-            copy.deepcopy(nodes), copy.deepcopy(paths), copy.deepcopy(startends)
+            copy.deepcopy(nodes),
+            copy.deepcopy(paths),
+            copy.deepcopy(startends),
         )
         self.listened, self.signs = self.set_listeners(nodes, paths, startends)
 
@@ -130,7 +137,7 @@ class CircuitSolver:
         # Initializing with steady-state solution
         try:
             self.solution[:, :] = np.linalg.solve(self.M0, self.Source).reshape(-1, 1)
-        except:
+        except np.linalg.LinAlgError:
             return 2
         self.build_LHS()
 
@@ -143,7 +150,7 @@ class CircuitSolver:
                 self.build_LHS()
                 try:
                     self.solution[:, step + 1] = np.linalg.solve(self.LHS, self.RHS)
-                except:
+                except np.linalg.LinAlgError:
                     self.recompute_diodes(step)
                     self.build_LHS()
                     self.solution[:, step + 1] = np.linalg.solve(self.LHS, self.RHS)
@@ -155,9 +162,17 @@ class CircuitSolver:
         fig, axs = plt.subplots(2)
         for key in self.listened.keys():
             if key < nbP:
-                axs[0].plot(np.linspace(0, self.maxtime, nb_step + 1), self.solution[key], label=self.listened[key])
+                axs[0].plot(
+                    np.linspace(0, self.maxtime, nb_step + 1),
+                    self.solution[key],
+                    label=self.listened[key],
+                )
             else:
-                axs[1].plot(np.linspace(0, self.maxtime, nb_step + 1), self.solution[key], label=self.listened[key])
+                axs[1].plot(
+                    np.linspace(0, self.maxtime, nb_step + 1),
+                    self.solution[key],
+                    label=self.listened[key],
+                )
         axs[0].legend()
         axs[1].legend()
         plt.show()
@@ -182,29 +197,41 @@ class CircuitSolver:
                     idP1 = edge.end
                 else:
                     idP1 = edge.start
-                if type(edge.elem) == Resistor:
+                if type(edge.elem) is Resistor:
                     M0[line, idP1] = -1
                     M0[line, idP0] = 1
                     M0[line, idQ] = -edge.elem.get_value()
-                elif type(edge.elem) == Capacitor:
+                elif type(edge.elem) is Capacitor:
                     M1[line, idP1] = -edge.elem.get_value()
                     M1[line, idP0] = edge.elem.get_value()
                     M0[line, idQ] = -1
-                elif type(edge.elem) == Inductor:
+                elif type(edge.elem) is Inductor:
                     M0[line, idP1] = -1
                     M0[line, idP0] = 1
                     M1[line, idQ] = -edge.elem.get_value()
-                elif type(edge.elem) == Diode:
+                elif type(edge.elem) is Diode:
                     M0[line, idP1] = -1
                     M0[line, idP0] = 1
                     if idP0 == edge.start:
-                        update_diode_dict[line] = [True, idP0, idP1, idQ, 1]  # True = Open, 1 -> Q
+                        update_diode_dict[line] = [
+                            True,
+                            idP0,
+                            idP1,
+                            idQ,
+                            1,
+                        ]  # True = Open, 1 -> Q
                     else:
-                        update_diode_dict[line] = [True, idP0, idP1, idQ, -1]  # True = Open, -1 -> -Q
-                elif type(edge.elem) == Ground or type(edge.elem) == PSource:
+                        update_diode_dict[line] = [
+                            True,
+                            idP0,
+                            idP1,
+                            idQ,
+                            -1,
+                        ]  # True = Open, -1 -> -Q
+                elif type(edge.elem) is Ground or type(edge.elem) is PSource:
                     idP1 = edge.start
                     M0[line, idP1] = 1
-                elif type(edge.elem) == QSource:
+                elif type(edge.elem) is QSource:
                     if idP0 == edge.start:
                         M0[line, idQ] = -1
                     else:
@@ -277,7 +304,11 @@ class CircuitSolver:
                     self.set_diode(line, diode_open=False)
                     recompute = True
             else:
-                if signQ * (self.solution[idP0, step + 1] - self.solution[idP1, step + 1]) > 0:
+                if (
+                    signQ
+                    * (self.solution[idP0, step + 1] - self.solution[idP1, step + 1])
+                    > 0
+                ):
                     self.set_diode(line, diode_open=True)
                     recompute = True
         return recompute
@@ -323,7 +354,7 @@ class CircuitSolver:
         line = 0
         for i, path in enumerate(paths):
             for edge in path:
-                if type(edge.elem) == PSource or type(edge.elem) == QSource:
+                if type(edge.elem) is PSource or type(edge.elem) is QSource:
                     update_source_dict[line] = calc.calculate(edge.elem.get_value())
                 line += 1
         return update_source_dict
@@ -353,10 +384,14 @@ class CircuitSolver:
         """
         self.RHS = np.zeros_like(self.Source)
         if self.time_integration == "BDF":
-            self.RHS = self.Source + np.matmul(self.M1, self.solution[:, step] / self.dt)
+            self.RHS = self.Source + np.matmul(
+                self.M1, self.solution[:, step] / self.dt
+            )
         elif self.time_integration == "BDF2":
             self.RHS = self.Source + np.matmul(
-                self.M1, (4 * self.solution[:, step] - self.solution[:, step - 1]) / (2 * self.dt)
+                self.M1,
+                (4 * self.solution[:, step] - self.solution[:, step - 1])
+                / (2 * self.dt),
             )
         return
 

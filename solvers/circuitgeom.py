@@ -46,8 +46,8 @@ class CircuitGeom:
         """
         index = 0
         exists = False
-        l = len(self.nodes)
-        if l == 0:
+        nnodes = len(self.nodes)
+        if nnodes == 0:
             index = 0
             exists = False
         elif high >= low:
@@ -69,13 +69,14 @@ class CircuitGeom:
         """
         Returns the index of the elem for insertion,
         or the index of the existing elem if exists==True.
-        Normally elems are created in order so there shouldn't be any use for the first option.
+        Normally elems are created in order so there shouldn't be any use for the first
+        option.
         """
         index = 0
         exists = False
         selems = self.elems
-        l = len(selems)
-        if l == 0:
+        nelems = len(selems)
+        if nelems == 0:
             index = 0
             exists = False
         elif high >= low:

@@ -1,10 +1,12 @@
 from bisect import bisect_left
 import numpy as np
-from exceptions.elementsexceptions import *
+from exceptions.elementsexceptions import BadValueTypeError
 
 
 class Wire:
-    def __init__(self, node1, node2, value: float | str | None = None, active: bool = False) -> None:
+    def __init__(
+        self, node1, node2, value: float | str | None = None, active: bool = False
+    ) -> None:
         self.name = ""
         self.nameid = -1
         self.nodes = [node1, node2]
@@ -24,12 +26,34 @@ class Wire:
 
     def drawbbox(self, drbd):
         x0, y0, x1, y1, x2, y2, x3, y3 = drbd.coord2pix(self.get_bbox_coords())
-        self.bbox = drbd.canvas.create_polygon(x0, y0, x1, y1, x2, y2, x3, y3, fill="", outline="", tags="circuit")
-        drbd.canvas.tag_bind(self.bbox, "<ButtonPress-1>", lambda event, drbd=drbd: self.onElemClick(event, drbd))
-        drbd.canvas.tag_bind(self.bbox, "<ButtonRelease-1>", lambda event, drbd=drbd: self.onElemRelease(event, drbd))
-        drbd.canvas.tag_bind(self.bbox, "<B1-Motion>", lambda event, drbd=drbd: self.onElemMotion(event, drbd))
-        drbd.canvas.tag_bind(self.bbox, "<Enter>", lambda event, drbd=drbd: self.onElemHoverI(event, drbd))
-        drbd.canvas.tag_bind(self.bbox, "<Leave>", lambda event, drbd=drbd: self.onElemHoverO(event, drbd))
+        self.bbox = drbd.canvas.create_polygon(
+            x0, y0, x1, y1, x2, y2, x3, y3, fill="", outline="", tags="circuit"
+        )
+        drbd.canvas.tag_bind(
+            self.bbox,
+            "<ButtonPress-1>",
+            lambda event, drbd=drbd: self.onElemClick(event, drbd),
+        )
+        drbd.canvas.tag_bind(
+            self.bbox,
+            "<ButtonRelease-1>",
+            lambda event, drbd=drbd: self.onElemRelease(event, drbd),
+        )
+        drbd.canvas.tag_bind(
+            self.bbox,
+            "<B1-Motion>",
+            lambda event, drbd=drbd: self.onElemMotion(event, drbd),
+        )
+        drbd.canvas.tag_bind(
+            self.bbox,
+            "<Enter>",
+            lambda event, drbd=drbd: self.onElemHoverI(event, drbd),
+        )
+        drbd.canvas.tag_bind(
+            self.bbox,
+            "<Leave>",
+            lambda event, drbd=drbd: self.onElemHoverO(event, drbd),
+        )
 
     def redrawbbox(self, drbd):
         x0, y0, x1, y1, x2, y2, x3, y3 = drbd.coord2pix(self.get_bbox_coords())
@@ -41,7 +65,9 @@ class Wire:
             fill = "red"
         else:
             fill = ""
-        self.Qid = drbd.canvas.create_polygon(x0, y0, x1, y1, x2, y2, fill=fill, outline="", width=2, tags="circuit")
+        self.Qid = drbd.canvas.create_polygon(
+            x0, y0, x1, y1, x2, y2, fill=fill, outline="", width=2, tags="circuit"
+        )
 
     def redrawQ(self, drbd):
         if self.listened:
@@ -91,12 +117,12 @@ class Wire:
     def get_bbox_coords(self):
         coords = self.getcoords()
         vec = coords[2:] - coords[:2]
-        l = np.linalg.norm(vec)
-        if l == 0:
+        length = np.linalg.norm(vec)
+        if length == 0:
             return np.concatenate((coords, coords))
-        w = 0.8 * l
+        w = 0.8 * length
         h = 0.4
-        vec = vec / l
+        vec = vec / length
         vor = np.array([-vec[1], vec[0]])
         mid = (coords[2:] + coords[:2]) / 2
         p0 = mid - w / 2 * vec + h / 2 * vor
@@ -108,13 +134,13 @@ class Wire:
     def get_Q_coords(self):
         coords = self.getcoords()
         vec = coords[2:] - coords[:2]
-        l = np.linalg.norm(vec)
-        if l == 0:
+        length = np.linalg.norm(vec)
+        if length == 0:
             return np.concatenate((coords, coords))
         sign = self.listened
-        w = 0.85 * l
+        w = 0.85 * length
         h = 0.2 * self.Qsize
-        vec = vec / l
+        vec = vec / length
         vor = np.array([-vec[1], vec[0]])
         mid = (coords[2:] + coords[:2]) / 2
         p0 = mid + sign * (w / 2 - 0.1 * self.Qsize) * vec - h / 2 * vor
@@ -178,8 +204,14 @@ class Wire:
     def onElemMotion(self, event, drbd):
         if drbd.drag_function == "Edit":
             x1, y1 = drbd.pix2coord(event.x, event.y)
-            self.setstart(self.prevcoords[0] - round(self.x0 - x1), self.prevcoords[1] - round(self.y0 - y1))
-            self.setend(self.prevcoords[2] - round(self.x0 - x1), self.prevcoords[3] - round(self.y0 - y1))
+            self.setstart(
+                self.prevcoords[0] - round(self.x0 - x1),
+                self.prevcoords[1] - round(self.y0 - y1),
+            )
+            self.setend(
+                self.prevcoords[2] - round(self.x0 - x1),
+                self.prevcoords[3] - round(self.y0 - y1),
+            )
             self.redraw(drbd)
 
     def onElemHoverI(self, event, drbd):
@@ -206,12 +238,12 @@ class Wire:
         return str(self)
 
     def set_value(self, value):
-        if not self.active and not (isinstance(value, float) or value == None):
+        if not self.active and not (isinstance(value, float) or value is None):
             try:
                 value = float(value)
-            except:
+            except (ValueError, TypeError):
                 raise BadValueTypeError(type(value), float)
-        if self.active and not (isinstance(value, str) or value == None):
+        if self.active and not (isinstance(value, str) or value is None):
             raise BadValueTypeError(type(value), str)
         self.value = value
         # source = sp.interpolate.CubicSpline(x, y, extrapolate="periodic")
@@ -227,9 +259,15 @@ class Wire:
         my_dict = {}
         my_dict["type"] = self.__class__.__name__
         my_dict["name"] = self.name
-        my_dict["nodes"] = [nodes_list.index(self.nodes[0]), nodes_list.index(self.nodes[1])]
+        my_dict["nodes"] = [
+            nodes_list.index(self.nodes[0]),
+            nodes_list.index(self.nodes[1]),
+        ]
         my_dict["pressure_listeners"] = [self.get_listenP(0), self.get_listenP(1)]
-        my_dict["pressure_listener_names"] = [self.nodes[0].listener_name, self.nodes[1].listener_name]
+        my_dict["pressure_listener_names"] = [
+            self.nodes[0].listener_name,
+            self.nodes[1].listener_name,
+        ]
         my_dict["flow_listener"] = self.get_listenQ()
         my_dict["flow_listener_name"] = self.listener_name
         my_dict["active"] = self.active

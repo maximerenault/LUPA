@@ -22,9 +22,9 @@ class GridZoom(ttk.Frame):
         self.canvas.bind("<Configure>", self.resize)  # canvas is resized
         self.canvas.bind("<ButtonPress-1>", self.move_from)
         self.canvas.bind("<B1-Motion>", self.move_to)
-        self.canvas.bind("<MouseWheel>", self.gridwheel)  # with Windows and MacOS, but not Linux
-        self.canvas.bind("<Button-5>", self.gridwheel)  # only with Linux, wheel scroll down
-        self.canvas.bind("<Button-4>", self.gridwheel)  # only with Linux, wheel scroll up
+        self.canvas.bind("<MouseWheel>", self.gridwheel)  # with Windows and MacOS
+        self.canvas.bind("<Button-5>", self.gridwheel)  # with Linux, scroll down
+        self.canvas.bind("<Button-4>", self.gridwheel)  # with Linux, scroll up
         self.width = self.canvas.winfo_width()
         self.height = self.canvas.winfo_height()
         self.dotsize = 3
@@ -45,7 +45,9 @@ class GridZoom(ttk.Frame):
         # Create a status bar
         self.status = tk.StringVar()
         self.set_status()
-        statusbar = tk.Label(self.master, textvariable=self.status, anchor="w", relief=tk.SUNKEN)
+        statusbar = tk.Label(
+            self.master, textvariable=self.status, anchor="w", relief=tk.SUNKEN
+        )
         statusbar.grid(row=1, column=0, sticky="we")
         self.show_background()
         # self.show_frontground()
@@ -53,7 +55,9 @@ class GridZoom(ttk.Frame):
     def set_status(self):
         self.cx, self.cy = self.pix2coord(int(self.width / 2), int(self.height / 2))
         self.status.set(
-            f"Position : x = {-self.x-1+int(self.width/2)} , y = {-int(self.height/2)+self.y+1} , cx = {self.cx:.2f} , cy = {self.cy:.2f} , Scale : {self.imscale:.2f}"
+            f"Position : x = {-self.x-1+int(self.width/2)} , \
+y = {-int(self.height/2)+self.y+1} , cx = {self.cx:.2f} , \
+cy = {self.cy:.2f} , Scale : {self.imscale:.2f}"
         )
 
     def resize(self, event=None):
@@ -138,9 +142,15 @@ class GridZoom(ttk.Frame):
         h21 = (h2 > 0) * ds
         h22 = (h2 > ds) * (h2 - ds)
         data = (
-            "{{{}{}{}{}}} ".format("gray50 " * w11, "white " * w12, "gray50 " * w21, "white " * w22) * h11
+            "{{{}{}{}{}}} ".format(
+                "gray50 " * w11, "white " * w12, "gray50 " * w21, "white " * w22
+            )
+            * h11
             + "{{{}}} ".format("white " * sp) * h12
-            + "{{{}{}{}{}}} ".format("gray50 " * w11, "white " * w12, "gray50 " * w21, "white " * w22) * h21
+            + "{{{}{}{}{}}} ".format(
+                "gray50 " * w11, "white " * w12, "gray50 " * w21, "white " * w22
+            )
+            * h21
             + "{{{}}} ".format("white " * sp) * h22
         )
         img.put(data, to=(0, 0, self.width, self.height))
@@ -181,11 +191,17 @@ class GridZoom(ttk.Frame):
         and returns pixel coordinates array in same shape.
         """
         pixarray = np.zeros_like(coordarray, dtype=int)
-        pixarray[0::2] = (coordarray[0::2] * self.pixgrid + self.x + self.dotsize // 2).astype(int)
-        pixarray[1::2] = (-coordarray[1::2] * self.pixgrid + self.y + self.dotsize // 2).astype(int)
+        pixarray[0::2] = (
+            coordarray[0::2] * self.pixgrid + self.x + self.dotsize // 2
+        ).astype(int)
+        pixarray[1::2] = (
+            -coordarray[1::2] * self.pixgrid + self.y + self.dotsize // 2
+        ).astype(int)
         return pixarray
 
     def pix2coord(self, pixx: int, pixy: int, dtype=float):
-        coordx = (pixx - self.dotsize // 2 - self.x) / self.pixgrid  # 1 pixel difference because of the background
-        coordy = -(pixy - self.dotsize // 2 - self.y) / self.pixgrid  # again Minus because y inverted
+        # 1 pixel difference because of the background
+        coordx = (pixx - self.dotsize // 2 - self.x) / self.pixgrid
+        # again Minus because y inverted
+        coordy = -(pixy - self.dotsize // 2 - self.y) / self.pixgrid
         return coordx, coordy

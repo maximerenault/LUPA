@@ -13,9 +13,9 @@ from elements.resistor import Resistor
 from elements.capacitor import Capacitor
 from elements.inductor import Inductor
 from solvers.circuitgeom import CircuitGeom
-from utils.geometry import *
+from utils.geometry import start_from_elem, elem_init_pos, intersect, distance
 import tkinter as tk
-from tkinter import Frame, ttk
+from tkinter import ttk
 
 from utils.io import loadfromjson, savetojson
 
@@ -28,9 +28,9 @@ class DrawingBoard(GridZoom):
         self.canvas.bind("<ButtonPress-1>", self.db_move_from)
         self.canvas.bind("<ButtonRelease-1>", self.db_release)
         self.canvas.bind("<B1-Motion>", self.db_move_to)
-        self.canvas.bind("<MouseWheel>", self.db_wheel)  # with Windows and MacOS, but not Linux
-        self.canvas.bind("<Button-5>", self.db_wheel)  # only with Linux, wheel scroll down
-        self.canvas.bind("<Button-4>", self.db_wheel)  # only with Linux, wheel scroll up
+        self.canvas.bind("<MouseWheel>", self.db_wheel)  # with Windows and MacOS
+        self.canvas.bind("<Button-5>", self.db_wheel)  # with Linux, scroll down
+        self.canvas.bind("<Button-4>", self.db_wheel)  # with Linux, scroll up
 
         self.frameChoices = ttk.Frame(self.master)
         self.frameChoices.grid(row=2, column=0, pady=1)
@@ -39,8 +39,12 @@ class DrawingBoard(GridZoom):
         self.drag_func_elems = ["Wire", "R", "C", "L", "Gnd", "P", "Q", "Diode"]
         self.drag_functions = ["Edit", "Wire", "R", "C", "L", "Gnd", "P", "Q", "Diode"]
         for fc in self.drag_functions:
-            radio = tk.Radiobutton(
-                self.frameChoices, text=fc, variable=self.radiovalue, value=fc, command=self.dragchanger
+            tk.Radiobutton(
+                self.frameChoices,
+                text=fc,
+                variable=self.radiovalue,
+                value=fc,
+                command=self.dragchanger,
             ).pack(side=tk.LEFT, padx=6, pady=3)
         self.drag_function = "Edit"
         self.prevdragx = 0
@@ -84,8 +88,9 @@ class DrawingBoard(GridZoom):
         if self.drag_function == "Edit":
             return
 
-        # In Drawing mode, we use geometry function to check if the start belongs to an element already defined
-        # In that case the start of the new element is set at the end of the one already defined
+        # In Drawing mode, we use geometry function to check if the start
+        # belongs to an element already defined. In that case the start
+        # of the new element is set at the end of the one already defined.
         x0, y0 = self.pix2coord(self.prevx, self.prevy)
         x0 = round(x0)
         y0 = round(y0)
@@ -233,7 +238,9 @@ class DrawingBoard(GridZoom):
             for i in range(2):
                 element.set_listenP(i, el_dict["pressure_listeners"][i], self)
                 iid = self.frameListeners.get_node_iid(element.nodes[i].id)
-                self.frameListeners.edit_listener(iid, el_dict["pressure_listener_names"][i])
+                self.frameListeners.edit_listener(
+                    iid, el_dict["pressure_listener_names"][i]
+                )
 
             element.set_listenQ(int(el_dict["flow_listener"]), self)
             iid = self.frameListeners.get_elem_iid(element.ids[0])

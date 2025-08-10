@@ -1,19 +1,32 @@
 import numpy as np
-import scipy as sp
 from elements.ground import Ground
 from elements.node import Node
 
 
 class PSource(Ground):
-    def __init__(self, node1: Node, node2: Node, value: float | str | None = None, active: bool = False) -> None:
+    def __init__(
+        self,
+        node1: Node,
+        node2: Node,
+        value: float | str | None = None,
+        active: bool = False,
+    ) -> None:
         super().__init__(node1, node2, value, active)
         self.name = "P"
         self.widths = [1, 2]
 
     def draw(self, drbd):
         xs, ys, xe, ye, x1, y1, x2, y2 = drbd.coord2pix(self.get_psource_coords())
-        self.ids.append(drbd.canvas.create_line(xs, ys, xe, ye, width=self.widths[0], tags="circuit"))
-        self.ids.append(drbd.canvas.create_oval(x1, y1, x2, y2, width=self.widths[1], tags="circuit"))
+        self.ids.append(
+            drbd.canvas.create_line(
+                xs, ys, xe, ye, width=self.widths[0], tags="circuit"
+            )
+        )
+        self.ids.append(
+            drbd.canvas.create_oval(
+                x1, y1, x2, y2, width=self.widths[1], tags="circuit"
+            )
+        )
         self.afterdraw(drbd)
 
     def redraw(self, drbd):
@@ -25,13 +38,12 @@ class PSource(Ground):
     def get_psource_coords(self):
         coords = self.getcoords()
         vec = coords[2:] - coords[:2]
-        l = np.linalg.norm(vec)
-        if l == 0:
+        length = np.linalg.norm(vec)
+        if length == 0:
             return np.concatenate((coords[:2], coords[:2], coords[:2], coords[:2]))
-        vec = vec / l
+        vec = vec / length
         w = 0.5
         h = 0.5
-        vor = np.array([-vec[1], vec[0]])
         mid = coords[:2] + vec / 2
         p0 = coords[:2]
         p1 = mid - w / 2 * vec

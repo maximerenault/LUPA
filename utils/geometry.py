@@ -16,18 +16,13 @@ def intersect(elem1: Wire, elem2: Wire):
         if (y4 - y2) * (x2 - x1) - (x4 - x2) * (y2 - y1) == 0:  # colinear
             d13 = distance(x1, y1, x3, y3)
             d14 = distance(x1, y1, x4, y4)
-            # d12 = distance(x1,y1,x2,y2)
-            # if d12<d13 and d12<d14 :
-            #     return (x2,y2)
             if d13 < d14:
                 dp = dotprod(x1, y1, x2, y2, x3, y3, x4, y4)
                 if dp > 0:
-                    # print("13, 12.34>0")
                     return (x3, y3)
             else:
                 dp = dotprod(x1, y1, x2, y2, x3, y3, x4, y4)
                 if dp < 0:
-                    # print("14, 12.34<0")
                     return (x4, y4)
         return (x2, y2)
 
@@ -42,9 +37,6 @@ def intersect(elem1: Wire, elem2: Wire):
         return (x3, y3)
     if ub == 1:
         return (x4, y4)
-    # dx = ua * (x2-x1)
-    # dy = ua * (y2-y1)
-    # return (x1+np.fix(dx),y1+np.fix(dy))
     return (x1, y1)
 
 
@@ -56,7 +48,16 @@ def distance(x1: float, y1: float, x2: float, y2: float):
     return sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
 
 
-def dotprod(x1: float, y1: float, x2: float, y2: float, x3: float, y3: float, x4: float, y4: float):
+def dotprod(
+    x1: float,
+    y1: float,
+    x2: float,
+    y2: float,
+    x3: float,
+    y3: float,
+    x4: float,
+    y4: float,
+):
     """
     Returns the dot product of vectors
     (x2-x1,y2-y1) and (x4-x3,y4-y3)
@@ -70,7 +71,8 @@ def point_on_elem(elem: Wire, x0: float, y0: float):
     on the line of elem
     """
     x1, y1, x2, y2 = elem.getcoords()
-    if (y1 - y0) * (x2 - x1) - (x1 - x0) * (y2 - y1) != 0:  # Check angle by cross product 0->1 x 1->2
+    # Check angle by cross product 0->1 x 1->2
+    if (y1 - y0) * (x2 - x1) - (x1 - x0) * (y2 - y1) != 0:
         return False
     dp1 = dotprod(x1, y1, x0, y0, x1, y1, x2, y2)
     dp2 = dotprod(x2, y2, x0, y0, x2, y2, x1, y1)
@@ -84,8 +86,9 @@ def start_from_elem(drbd, x0: float, y0: float):
     Returns position and direction if starting from an
     existing element
     """
-
-    eldir = 3  # Direction of the starting element, by default it points left (so we draw to the right)
+    # Direction of the starting element
+    # by default it points left (so we draw to the right)
+    eldir = 3
     for el in drbd.cgeom.elems[::-1]:
         if point_on_elem(el, x0, y0):
             xs, ys, xe, ye = el.getcoords()

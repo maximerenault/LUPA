@@ -4,8 +4,9 @@ import numpy as np
 def generalized_alpha_step(M, D, K, F, a, v, x, t, dt, rho=0.6):
     """Implementation of one step of the generalized alpha method.
 
-    J. Chung and G. Hulbert. A time integration algorithm for structural dynamics with improved
-    numerical dissipation: The generalized-alpha method. Journal of Applied Mechanics, 60, 1993.
+    J. Chung and G. Hulbert. A time integration algorithm for structural dynamics with
+    improved numerical dissipation: The generalized-alpha method.
+    Journal of Applied Mechanics, 60, 1993.
 
     Args:
         M (np.ndarray): square mass matrix
@@ -20,7 +21,8 @@ def generalized_alpha_step(M, D, K, F, a, v, x, t, dt, rho=0.6):
         rho (float, optional): high frequency damping in [0,1]. Defaults to 0.6.
 
     Returns:
-        (np.ndarray, np.ndarray, np.ndarray): acceleration, velocity and position at step n+1
+        (np.ndarray, np.ndarray, np.ndarray): acceleration, velocity and
+                                              position at step n+1
     """
 
     alpham = (2 * rho - 1) / (rho + 1)
@@ -28,11 +30,20 @@ def generalized_alpha_step(M, D, K, F, a, v, x, t, dt, rho=0.6):
     beta = 1 / 4 * (1 - alpham + alphaf) ** 2
     gamma = 1 / 2 - alpham + alphaf
 
-    LHS = M * (1 - alpham) + D * (1 - alphaf) * dt * gamma + K * (1 - alphaf) * 1 / 2 * dt**2 * 2 * beta
+    LHS = (
+        M * (1 - alpham)
+        + D * (1 - alphaf) * dt * gamma
+        + K * (1 - alphaf) * 1 / 2 * dt**2 * 2 * beta
+    )
     RHS = (
         F(t + (1 - alphaf) * dt)
         - D @ (v + (1 - alphaf) * dt * (1 - gamma) * a)
-        - K @ (x + (1 - alphaf) * dt * v + (1 - alphaf) * 1 / 2 * dt**2 * (1 - 2 * beta) * a)
+        - K
+        @ (
+            x
+            + (1 - alphaf) * dt * v
+            + (1 - alphaf) * 1 / 2 * dt**2 * (1 - 2 * beta) * a
+        )
     )
 
     a_n1 = np.linalg.solve(LHS, RHS)

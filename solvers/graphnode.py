@@ -18,7 +18,7 @@ class GraphNode:
         self.type = type
 
     def __str__(self):
-        lastr = "GN_"+self.type+"["
+        lastr = "GN_" + self.type + "["
         for edge in self.edges:
             lastr += str(edge) + ", "
         lastr += "]"

@@ -1,8 +1,6 @@
 from GUI.framebase import FrameBase
 from utils.io import readvalues
 import numpy as np
-from matplotlib.figure import Figure
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from tkinter import ttk
 import tkinter as tk
 from elements.wire import Wire
@@ -12,8 +10,8 @@ from elements.inductor import Inductor
 from elements.ground import Ground
 from elements.psource import PSource
 from elements.diode import Diode
-from exceptions.attibutesexceptions import *
-from utils.strings import *
+from exceptions.attibutesexceptions import BadCoordError, BadNumberError
+from utils.strings import check_strint
 import matplotlib
 import utils.calculator as calc
 
@@ -34,32 +32,80 @@ class FrameAttributes(ttk.Frame):
         self.widget_configs = {
             "Clear": {
                 "layout": {"clear": {"type": "label", "grid": {"row": 0, "column": 0}}},
-                "rowcol_weights": {"rows": [0], "rowweights": [1], "cols": [0], "colweights": [1]},
+                "rowcol_weights": {
+                    "rows": [0],
+                    "rowweights": [1],
+                    "cols": [0],
+                    "colweights": [1],
+                },
             },
             "Wire": {
                 "layout": {
                     "labnam": {"type": "label", "grid": {"row": 0, "column": 0}},
-                    "name": {"type": "entry", "grid": {"row": 0, "column": 1, "columnspan": 2, "sticky": "ew"}},
+                    "name": {
+                        "type": "entry",
+                        "grid": {
+                            "row": 0,
+                            "column": 1,
+                            "columnspan": 2,
+                            "sticky": "ew",
+                        },
+                    },
                     "labsta": {"type": "label", "grid": {"row": 1, "column": 0}},
                     "startx": {"type": "entry", "grid": {"row": 1, "column": 1}},
                     "starty": {"type": "entry", "grid": {"row": 1, "column": 2}},
-                    "lablistenPstart": {"type": "label", "grid": {"row": 2, "column": 0}},
-                    "listenPstart": {"type": "checkbox", "grid": {"row": 2, "column": 1}},
+                    "lablistenPstart": {
+                        "type": "label",
+                        "grid": {"row": 2, "column": 0},
+                    },
+                    "listenPstart": {
+                        "type": "checkbox",
+                        "grid": {"row": 2, "column": 1},
+                    },
                     "labend": {"type": "label", "grid": {"row": 3, "column": 0}},
                     "endx": {"type": "entry", "grid": {"row": 3, "column": 1}},
                     "endy": {"type": "entry", "grid": {"row": 3, "column": 2}},
                     "lablistenPend": {"type": "label", "grid": {"row": 4, "column": 0}},
                     "listenPend": {"type": "checkbox", "grid": {"row": 4, "column": 1}},
                     "lablistenQ": {"type": "label", "grid": {"row": 5, "column": 0}},
-                    "listenQ": {"type": "radio", "grid": {"row": 5, "column": 1, "columnspan": 2, "sticky": "ew"}},
-                    "delete": {"type": "button", "grid": {"row": 6, "column": 0, "columnspan": 3, "sticky": "ew"}},
+                    "listenQ": {
+                        "type": "radio",
+                        "grid": {
+                            "row": 5,
+                            "column": 1,
+                            "columnspan": 2,
+                            "sticky": "ew",
+                        },
+                    },
+                    "delete": {
+                        "type": "button",
+                        "grid": {
+                            "row": 6,
+                            "column": 0,
+                            "columnspan": 3,
+                            "sticky": "ew",
+                        },
+                    },
                 },
-                "rowcol_weights": {"rows": [], "rowweights": [], "cols": [1, 2], "colweights": [1, 1]},
+                "rowcol_weights": {
+                    "rows": [],
+                    "rowweights": [],
+                    "cols": [1, 2],
+                    "colweights": [1, 1],
+                },
             },
             "Dipole": {
                 "layout": {
                     "labnam": {"type": "label", "grid": {"row": 0, "column": 0}},
-                    "name": {"type": "entry", "grid": {"row": 0, "column": 1, "columnspan": 2, "sticky": "ew"}},
+                    "name": {
+                        "type": "entry",
+                        "grid": {
+                            "row": 0,
+                            "column": 1,
+                            "columnspan": 2,
+                            "sticky": "ew",
+                        },
+                    },
                     "labsta": {"type": "label", "grid": {"row": 1, "column": 0}},
                     "startx": {"type": "entry", "grid": {"row": 1, "column": 1}},
                     "starty": {"type": "entry", "grid": {"row": 1, "column": 2}},
@@ -67,40 +113,143 @@ class FrameAttributes(ttk.Frame):
                     "endx": {"type": "entry", "grid": {"row": 2, "column": 1}},
                     "endy": {"type": "entry", "grid": {"row": 2, "column": 2}},
                     "labval": {"type": "label", "grid": {"row": 3, "column": 0}},
-                    "value": {"type": "entry", "grid": {"row": 3, "column": 1, "columnspan": 2, "sticky": "ew"}},
-                    "delete": {"type": "button", "grid": {"row": 4, "column": 0, "columnspan": 3, "sticky": "ew"}},
+                    "value": {
+                        "type": "entry",
+                        "grid": {
+                            "row": 3,
+                            "column": 1,
+                            "columnspan": 2,
+                            "sticky": "ew",
+                        },
+                    },
+                    "delete": {
+                        "type": "button",
+                        "grid": {
+                            "row": 4,
+                            "column": 0,
+                            "columnspan": 3,
+                            "sticky": "ew",
+                        },
+                    },
                 },
-                "rowcol_weights": {"rows": [], "rowweights": [], "cols": [1, 2], "colweights": [1, 1]},
+                "rowcol_weights": {
+                    "rows": [],
+                    "rowweights": [],
+                    "cols": [1, 2],
+                    "colweights": [1, 1],
+                },
             },
             "Ground": {
                 "layout": {
                     "labnam": {"type": "label", "grid": {"row": 0, "column": 0}},
-                    "name": {"type": "entry", "grid": {"row": 0, "column": 1, "columnspan": 2, "sticky": "ew"}},
+                    "name": {
+                        "type": "entry",
+                        "grid": {
+                            "row": 0,
+                            "column": 1,
+                            "columnspan": 2,
+                            "sticky": "ew",
+                        },
+                    },
                     "labsta": {"type": "label", "grid": {"row": 1, "column": 0}},
                     "startx": {"type": "entry", "grid": {"row": 1, "column": 1}},
                     "starty": {"type": "entry", "grid": {"row": 1, "column": 2}},
                     "labdir": {"type": "label", "grid": {"row": 2, "column": 0}},
-                    "direct": {"type": "combobox", "grid": {"row": 2, "column": 1, "columnspan": 2, "sticky": "ew"}},
-                    "delete": {"type": "button", "grid": {"row": 3, "column": 0, "columnspan": 3, "sticky": "ew"}},
+                    "direct": {
+                        "type": "combobox",
+                        "grid": {
+                            "row": 2,
+                            "column": 1,
+                            "columnspan": 2,
+                            "sticky": "ew",
+                        },
+                    },
+                    "delete": {
+                        "type": "button",
+                        "grid": {
+                            "row": 3,
+                            "column": 0,
+                            "columnspan": 3,
+                            "sticky": "ew",
+                        },
+                    },
                 },
-                "rowcol_weights": {"rows": [], "rowweights": [], "cols": [1, 2], "colweights": [1, 1]},
+                "rowcol_weights": {
+                    "rows": [],
+                    "rowweights": [],
+                    "cols": [1, 2],
+                    "colweights": [1, 1],
+                },
             },
             "Source": {
                 "layout": {
                     "labnam": {"type": "label", "grid": {"row": 0, "column": 0}},
-                    "name": {"type": "entry", "grid": {"row": 0, "column": 1, "columnspan": 2, "sticky": "ew"}},
+                    "name": {
+                        "type": "entry",
+                        "grid": {
+                            "row": 0,
+                            "column": 1,
+                            "columnspan": 2,
+                            "sticky": "ew",
+                        },
+                    },
                     "labsta": {"type": "label", "grid": {"row": 1, "column": 0}},
                     "startx": {"type": "entry", "grid": {"row": 1, "column": 1}},
                     "starty": {"type": "entry", "grid": {"row": 1, "column": 2}},
                     "labdir": {"type": "label", "grid": {"row": 2, "column": 0}},
-                    "direct": {"type": "combobox", "grid": {"row": 2, "column": 1, "columnspan": 2, "sticky": "ew"}},
+                    "direct": {
+                        "type": "combobox",
+                        "grid": {
+                            "row": 2,
+                            "column": 1,
+                            "columnspan": 2,
+                            "sticky": "ew",
+                        },
+                    },
                     "labval": {"type": "label", "grid": {"row": 3, "column": 0}},
-                    "value": {"type": "entry", "grid": {"row": 3, "column": 1, "columnspan": 2, "sticky": "ew"}},
-                    "source": {"type": "plot", "grid": {"row": 4, "column": 0, "columnspan": 3, "sticky": "ew"}},
-                    "read": {"type": "button", "grid": {"row": 5, "column": 0, "columnspan": 3, "sticky": "ew"}},
-                    "delete": {"type": "button", "grid": {"row": 6, "column": 0, "columnspan": 3, "sticky": "ew"}},
+                    "value": {
+                        "type": "entry",
+                        "grid": {
+                            "row": 3,
+                            "column": 1,
+                            "columnspan": 2,
+                            "sticky": "ew",
+                        },
+                    },
+                    "source": {
+                        "type": "plot",
+                        "grid": {
+                            "row": 4,
+                            "column": 0,
+                            "columnspan": 3,
+                            "sticky": "ew",
+                        },
+                    },
+                    "read": {
+                        "type": "button",
+                        "grid": {
+                            "row": 5,
+                            "column": 0,
+                            "columnspan": 3,
+                            "sticky": "ew",
+                        },
+                    },
+                    "delete": {
+                        "type": "button",
+                        "grid": {
+                            "row": 6,
+                            "column": 0,
+                            "columnspan": 3,
+                            "sticky": "ew",
+                        },
+                    },
                 },
-                "rowcol_weights": {"rows": [], "rowweights": [], "cols": [1, 2], "colweights": [1, 1]},
+                "rowcol_weights": {
+                    "rows": [],
+                    "rowweights": [],
+                    "cols": [1, 2],
+                    "colweights": [1, 1],
+                },
             },
         }
 
@@ -119,14 +268,33 @@ class FrameAttributes(ttk.Frame):
         self.entry_options = {
             "name": {"bindfunc": self.update_name, "insert": ""},
             "value": {"bindfunc": self.update_value, "insert": ""},
-            "startx": {"bindfunc": lambda stringvar: self.update_coords(stringvar, "start", "x"), "insert": ""},
-            "starty": {"bindfunc": lambda stringvar: self.update_coords(stringvar, "start", "y"), "insert": ""},
-            "endx": {"bindfunc": lambda stringvar: self.update_coords(stringvar, "end", "x"), "insert": ""},
-            "endy": {"bindfunc": lambda stringvar: self.update_coords(stringvar, "end", "y"), "insert": ""},
+            "startx": {
+                "bindfunc": lambda stringvar: self.update_coords(
+                    stringvar, "start", "x"
+                ),
+                "insert": "",
+            },
+            "starty": {
+                "bindfunc": lambda stringvar: self.update_coords(
+                    stringvar, "start", "y"
+                ),
+                "insert": "",
+            },
+            "endx": {
+                "bindfunc": lambda stringvar: self.update_coords(stringvar, "end", "x"),
+                "insert": "",
+            },
+            "endy": {
+                "bindfunc": lambda stringvar: self.update_coords(stringvar, "end", "y"),
+                "insert": "",
+            },
         }
 
         self.cbbox_options = {
-            "direct": {"values": ["S", "E", "N", "W"], "bindfunc": self.update_direction},
+            "direct": {
+                "values": ["S", "E", "N", "W"],
+                "bindfunc": self.update_direction,
+            },
         }
 
         self.plot_options = {"source": {"dpi": 100, "xy": ([0, 1], [0, 1])}}
@@ -137,12 +305,25 @@ class FrameAttributes(ttk.Frame):
         }
 
         self.checkbox_options = {
-            "listenPstart": {"text": "on/off", "onoff": 0, "command": lambda var: self.set_listenP(0, var)},
-            "listenPend": {"text": "on/off", "onoff": 0, "command": lambda var: self.set_listenP(1, var)},
+            "listenPstart": {
+                "text": "on/off",
+                "onoff": 0,
+                "command": lambda var: self.set_listenP(0, var),
+            },
+            "listenPend": {
+                "text": "on/off",
+                "onoff": 0,
+                "command": lambda var: self.set_listenP(1, var),
+            },
         }
 
         self.radio_options = {
-            "listenQ": {"texts": ["off", "Q", "-Q"], "values": [0, 1, -1], "value": 0, "command": self.set_listenQ},
+            "listenQ": {
+                "texts": ["off", "Q", "-Q"],
+                "values": [0, 1, -1],
+                "value": 0,
+                "command": self.set_listenQ,
+            },
         }
 
         self.widget_frame = FrameBase(self, {})
@@ -179,7 +360,7 @@ class FrameAttributes(ttk.Frame):
             return
         try:
             newcoordint = int(newcoord)
-        except:
+        except (ValueError, TypeError):
             raise BadNumberError(newcoord)
         if pos == "start":
             if comp == "x":
@@ -312,9 +493,13 @@ class FrameAttributes(ttk.Frame):
 
         el = self.drbd.cgeom.elems[self.elem]
 
-        if isinstance(el, Resistor) or isinstance(el, Inductor) or isinstance(el, Capacitor):
+        if (
+            isinstance(el, Resistor)
+            or isinstance(el, Inductor)
+            or isinstance(el, Capacitor)
+        ):
             elemtype = "Dipole"
-        elif type(el) == Wire or type(el) == Diode:
+        elif type(el) is Wire or type(el) is Diode:
             elemtype = "Wire"
         elif isinstance(el, PSource):
             elemtype = "Source"
