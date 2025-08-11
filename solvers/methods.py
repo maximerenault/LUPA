@@ -1,7 +1,18 @@
 import numpy as np
 
 
-def generalized_alpha_step(M, D, K, F, a, v, x, t, dt, rho=0.6):
+def generalized_alpha_step(
+    M: np.ndarray,
+    D: np.ndarray,
+    K: np.ndarray,
+    F: callable[float, np.ndarray],
+    a: np.ndarray,
+    v: np.ndarray,
+    x: np.ndarray,
+    t: float,
+    dt: float,
+    rho: float = 0.6,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Implementation of one step of the generalized alpha method.
 
     J. Chung and G. Hulbert. A time integration algorithm for structural dynamics with

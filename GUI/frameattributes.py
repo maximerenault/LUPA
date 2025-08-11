@@ -10,10 +10,14 @@ from elements.inductor import Inductor
 from elements.ground import Ground
 from elements.psource import PSource
 from elements.diode import Diode
-from exceptions.attibutesexceptions import BadCoordError, BadNumberError
+from exceptions.attibutesexceptions import BadNumberError
 from utils.strings import check_strint
 import matplotlib
 import utils.calculator as calc
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from GUI.drawingboard import DrawingBoard
 
 matplotlib.use("TkAgg")
 
@@ -24,7 +28,7 @@ class FrameAttributes(ttk.Frame):
     and editing it
     """
 
-    def __init__(self, master, drbd):
+    def __init__(self, master: ttk.Frame, drbd: "DrawingBoard") -> None:
         ttk.Frame.__init__(self, master)
         self.rowconfigure((0, 2), weight=1)
         self.columnconfigure(0, weight=1)
@@ -332,7 +336,7 @@ class FrameAttributes(ttk.Frame):
         self.drbd = drbd
         self.elem = -1
 
-    def update_name(self, stringvar):
+    def update_name(self, stringvar: tk.StringVar) -> None:
         """
         Update name of the object and
         display it
@@ -340,11 +344,11 @@ class FrameAttributes(ttk.Frame):
         if self.elem == -1:
             self.update_attributes()
             return
-        el = self.drbd.cgeom.elems[self.elem]
+        el: Wire = self.drbd.cgeom.elems[self.elem]
         el.name = stringvar.get()
         el.redrawname(self.drbd)
 
-    def update_coords(self, stringvar, pos, comp):
+    def update_coords(self, stringvar: tk.StringVar, pos: str, comp: str) -> None:
         """
         Updates start or end coords of the object
         with id self.elem
@@ -352,7 +356,7 @@ class FrameAttributes(ttk.Frame):
         if self.elem == -1:
             self.update_attributes()
             return
-        el = self.drbd.cgeom.elems[self.elem]
+        el: Wire = self.drbd.cgeom.elems[self.elem]
         coords = el.getcoords()
         newcoord = check_strint(stringvar.get())
         stringvar.set(newcoord)
@@ -372,8 +376,6 @@ class FrameAttributes(ttk.Frame):
                 el.setend(newcoordint, coords[3])
             elif comp == "y":
                 el.setend(coords[2], newcoordint)
-        else:
-            raise BadCoordError
         newcoords = el.getcoords()
         if (newcoords[:2] == newcoords[2:]).all():
             el.setstart(coords[0], coords[1])
@@ -381,17 +383,17 @@ class FrameAttributes(ttk.Frame):
             return
         el.redraw(self.drbd)
 
-    def update_value(self, stringvar):
+    def update_value(self, stringvar: tk.StringVar) -> None:
         """
         Updates value for dipole elements
         """
         if self.elem == -1:
             self.update_attributes()
             return
-        el = self.drbd.cgeom.elems[self.elem]
+        el: Wire = self.drbd.cgeom.elems[self.elem]
         el.set_value(stringvar.get())
 
-    def read_values(self):
+    def read_values(self) -> None:
         """
         Allows for opening a csv file
         with columns time and value,
@@ -400,15 +402,15 @@ class FrameAttributes(ttk.Frame):
         file_name = tk.filedialog.askopenfilename()
         if file_name:
             x, y = readvalues(file_name)
-            el = self.drbd.cgeom.elems[self.elem]
+            el: Wire = self.drbd.cgeom.elems[self.elem]
             el.set_source(x, y)
             self.update_attributes()
 
-    def update_direction(self, event: tk.Event):
+    def update_direction(self, event: tk.Event) -> None:
         """
         Update source-type element direction
         """
-        el = self.drbd.cgeom.elems[self.elem]
+        el: Wire = self.drbd.cgeom.elems[self.elem]
         coords = el.getcoords()
         dirx = event.widget.get()
         if dirx == "S":
@@ -421,27 +423,27 @@ class FrameAttributes(ttk.Frame):
             el.setend(coords[0] - 1, coords[1])
         el.redraw(self.drbd)
 
-    def set_listenP(self, pos, var):
+    def set_listenP(self, pos: str, var: tk.StringVar) -> None:
         """
         Change pressure listening from True to False
         and the other way around.
         """
-        el = self.drbd.cgeom.elems[self.elem]
+        el: Wire = self.drbd.cgeom.elems[self.elem]
         val = var.get()
         el.set_listenP(pos, val, self.drbd)
         el.redraw(self.drbd)
 
-    def set_listenQ(self, var):
+    def set_listenQ(self, var: tk.StringVar) -> None:
         """
         Set Q listening flag to 0 if off, 1 if same direction
         as elem, -1 otherwise.
         """
-        el = self.drbd.cgeom.elems[self.elem]
+        el: Wire = self.drbd.cgeom.elems[self.elem]
         val = var.get()
         el.set_listenQ(val, self.drbd)
         el.redraw(self.drbd)
 
-    def delete_elem(self):
+    def delete_elem(self) -> None:
         """
         Calls deleteElement from the
         drawing board and resets attributes.
@@ -453,7 +455,7 @@ class FrameAttributes(ttk.Frame):
         self.elem = -1
         self.update_attributes()
 
-    def change_elem(self, id):
+    def change_elem(self, id: int) -> None:
         """
         Interface function for other modules
         to change the element selected
@@ -463,7 +465,7 @@ class FrameAttributes(ttk.Frame):
         self.elem = id
         self.update_attributes()
 
-    def update_widget_list(self, key: str = "Clear"):
+    def update_widget_list(self, key: str = "Clear") -> None:
         self.widget_frame.delete_all()
         del self.widget_frame
         config = self.widget_configs[key]
@@ -486,12 +488,12 @@ class FrameAttributes(ttk.Frame):
             w = config["rowcol_weights"]["colweights"][i]
             self.widget_frame.columnconfigure(col, weight=w)
 
-    def update_attributes(self):
+    def update_attributes(self) -> None:
         if self.elem == -1:
             self.update_widget_list()
             return
 
-        el = self.drbd.cgeom.elems[self.elem]
+        el: Wire = self.drbd.cgeom.elems[self.elem]
 
         if (
             isinstance(el, Resistor)
@@ -521,7 +523,9 @@ class FrameAttributes(ttk.Frame):
         self.radio_options["listenQ"]["value"] = int(el.get_listenQ())
 
         if el.active:
-            x = np.linspace(0, 10, 100)
+            maxt = self.drbd.frameSolve.csolver.get_maxtime()
+            dt = self.drbd.frameSolve.csolver.get_dt()
+            x = np.arange(0, maxt + dt, dt)
             y = calc.calculate(el.get_value())(x)
             self.plot_options["source"]["xy"] = (x, y)
 

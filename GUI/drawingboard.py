@@ -21,7 +21,8 @@ from utils.io import loadfromjson, savetojson
 
 
 class DrawingBoard(GridZoom):
-    def __init__(self, mainframe):
+
+    def __init__(self, mainframe: ttk.Frame) -> None:
         GridZoom.__init__(self, mainframe)
         # Bind events to the Canvas
         self.canvas.bind("<Configure>", self.db_resize)  # canvas is resized
@@ -68,7 +69,7 @@ class DrawingBoard(GridZoom):
         self.tabControl.add(self.frameVariables, text="Consts & Vars")
         self.tabControl.grid(row=0, column=1, rowspan=3, pady=1, sticky="nsew")
 
-    def db_resize(self, event):
+    def db_resize(self, event: tk.Event) -> None:
         """
         Resizing the window and
         redrawing everything
@@ -76,7 +77,7 @@ class DrawingBoard(GridZoom):
         dx, dy = self.resize()
         self.canvas.move("circuit", dx, dy)
 
-    def db_move_from(self, event):
+    def db_move_from(self, event: tk.Event) -> None:
         """
         Function for first press
         of left MB
@@ -94,7 +95,7 @@ class DrawingBoard(GridZoom):
         x0, y0 = self.pix2coord(self.prevx, self.prevy)
         x0 = round(x0)
         y0 = round(y0)
-        x0, y0, eldir = start_from_elem(self, x0, y0)
+        x0, y0, eldir = start_from_elem(self.cgeom.elems, x0, y0)
 
         if self.drag_function in self.drag_func_elems:
             node1 = Node(x0, y0)
@@ -117,11 +118,11 @@ class DrawingBoard(GridZoom):
             elif self.drag_function == "Diode":
                 elem = Diode(node1, node2)
 
-            elem_init_pos(self, elem, eldir + 2)
+            elem_init_pos(self.cgeom.elems, elem, eldir + 2)
             elem.draw(self)
             self.cgeom.add_elem(elem)
 
-    def db_move_to(self, event):
+    def db_move_to(self, event: tk.Event) -> None:
         """
         Function for moving mouse
         while pressing left MB
@@ -160,12 +161,12 @@ class DrawingBoard(GridZoom):
                 elem.redraw(self)
                 self.show_frontground(event)
 
-    def db_release(self, event):
+    def db_release(self, event: tk.Event) -> None:
         """
         Function for releasing left MB
         """
         if self.drag_function in self.drag_func_elems:
-            elem = self.cgeom.elems[-1]
+            elem: Wire = self.cgeom.elems[-1]
             x0, y0, x1, y1 = elem.getcoords()
             if x0 == x1 and y0 == y1:
                 self.cgeom.del_elem(-1)
@@ -173,7 +174,7 @@ class DrawingBoard(GridZoom):
                 self.cgeom.add_elem_nodes(elem)
                 self.frameAttr.change_elem(len(self.cgeom.elems) - 1)
 
-    def db_wheel(self, event):
+    def db_wheel(self, event: tk.Event) -> None:
         """
         Function for rolling the
         mouse wheel
@@ -181,16 +182,16 @@ class DrawingBoard(GridZoom):
         self.gridwheel(event)
         self.redraw_elements()
 
-    def dragchanger(self, event=None):
+    def dragchanger(self, event: tk.Event = None) -> None:
         self.drag_function = self.radiovalue.get()  # selected radio value
 
-    def deleteElement(self, el_id):
-        el = self.cgeom.elems[el_id]
+    def deleteElement(self, el_id: int) -> None:
+        el: Wire = self.cgeom.elems[el_id]
         el.delete(self)
         self.cgeom.del_elem(el_id)
         del el
 
-    def save(self, filename=None):
+    def save(self, filename: str = None) -> None:
         data = {}
         data["nodes"] = []
         data["elements"] = []
@@ -201,7 +202,7 @@ class DrawingBoard(GridZoom):
         self.frameVariables.save_variables(data)
         return savetojson(data, filename)
 
-    def load(self, filename=None):
+    def load(self, filename: str = None) -> str | None:
         data, filename = loadfromjson(filename)
         if data is None:
             return None
@@ -213,14 +214,16 @@ class DrawingBoard(GridZoom):
 
         return filename
 
-    def clear_canvas(self):
+    def clear_canvas(self) -> None:
         for el in self.cgeom.elems:
             for id in el.ids:
                 self.canvas.delete(id)
             self.canvas.delete(el.nameid)
         self.cgeom.clear()
 
-    def load_nodes_elements(self, nodes_data, elements_data):
+    def load_nodes_elements(
+        self, nodes_data: list[tuple[float, float]], elements_data: list[dict]
+    ) -> None:
         for el_dict in elements_data:
             id1, id2 = el_dict["nodes"]
             node1 = Node(*nodes_data[id1])
@@ -231,7 +234,9 @@ class DrawingBoard(GridZoom):
                 print(f"Unknown element type: {el_dict['type']}")
                 continue
 
-            element = constructor(node1, node2, el_dict["value"], el_dict["active"])
+            element: Wire = constructor(
+                node1, node2, el_dict["value"], el_dict["active"]
+            )
             element.set_name(el_dict["name"])
             element.draw(self)
 
@@ -249,6 +254,7 @@ class DrawingBoard(GridZoom):
             self.cgeom.add_elem(element)
             self.cgeom.add_elem_nodes(element)
 
-    def redraw_elements(self):
+    def redraw_elements(self) -> None:
         for el in self.cgeom.elems:
+            el: Wire
             el.redraw(self)

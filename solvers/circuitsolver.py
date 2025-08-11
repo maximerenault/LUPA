@@ -159,7 +159,7 @@ class CircuitSolver:
         for key in self.signs.keys():
             self.solution[key] *= self.signs[key]
 
-        fig, axs = plt.subplots(2)
+        _, axs = plt.subplots(2)
         for key in self.listened.keys():
             if key < nbP:
                 axs[0].plot(
@@ -179,7 +179,9 @@ class CircuitSolver:
 
         return 0
 
-    def build_M0M1(self, nbP, paths, startends) -> None:
+    def build_M0M1(
+        self, nbP: int, paths: list[list[GraphEdge]], startends: list[list[int]]
+    ) -> None:
         """
         Build matrices for zero and first order derivatives
         of the unknown vector.
@@ -346,7 +348,7 @@ class CircuitSolver:
         self.solution[:, step + 1] = np.linalg.solve(self.LHS, self.RHS)
         self.update_diode(step)
 
-    def build_source(self, paths) -> dict:
+    def build_source(self, paths: list[list[GraphEdge]]) -> dict:
         """
         Build live sources dict from list of paths.
         """
@@ -359,7 +361,7 @@ class CircuitSolver:
                 line += 1
         return update_source_dict
 
-    def update_source(self, time) -> None:
+    def update_source(self, time: float) -> None:
         """
         Update source vector according to the live sources
         in update_source_dict.
@@ -395,7 +397,13 @@ class CircuitSolver:
             )
         return
 
-    def check_no_solution(self, nbP, nbQ, paths, startends) -> int:
+    def check_no_solution(
+        self,
+        nbP: int,
+        nbQ: int,
+        paths: list[list[GraphEdge]],
+        startends: list[list[int]],
+    ) -> int:
         """
         Check if the problem has a solution.
         0 : OK
@@ -405,11 +413,11 @@ class CircuitSolver:
         c = 0
         # Count equations from elements
         for path in paths:
-            for edge in path:
+            for _ in path:
                 c += 1
         # Count equations from branching
         arr = np.array(startends).flat
-        unique, counts = np.unique(arr, return_counts=True)
+        _, counts = np.unique(arr, return_counts=True)
         for count in counts:
             if count > 1:
                 c += 1
@@ -420,7 +428,12 @@ class CircuitSolver:
             return 1
         return 0
 
-    def delete_node_sources(self, nodes, paths, startends) -> tuple[list, list, list]:
+    def delete_node_sources(
+        self,
+        nodes: list[GraphNode],
+        paths: list[list[GraphEdge]],
+        startends: list[list[int]],
+    ) -> tuple[list[GraphNode], list[list[GraphEdge]], list[list[int]]]:
         """
         Method to remove annoying "Source" nodes that were
         used previously to define correctly the graph.
@@ -457,7 +470,15 @@ class CircuitSolver:
                     startend[1] -= 1
         return nodes, paths, startends
 
-    def set_listeners(self, nodes, paths, startends) -> None:
+    def set_listeners(
+        self,
+        nodes: list[GraphNode],
+        paths: list[list[GraphEdge]],
+        startends: list[list[int]],
+    ) -> tuple[dict, dict]:
+        """
+        Set the listeners for the nodes and edges.
+        """
         listened = {}
         signs = {}
         for i, node in enumerate(nodes):

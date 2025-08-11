@@ -1,15 +1,15 @@
-from tkinter import Toplevel, Label, LEFT, SOLID
+from tkinter import Toplevel, Label, LEFT, SOLID, Widget
 
 
 class ToolTip(object):
 
-    def __init__(self, widget):
+    def __init__(self, widget: Widget) -> None:
         self.widget = widget
         self.tipwindow = None
         self.id = None
         self.x = self.y = 0
 
-    def showtip(self, text):
+    def showtip(self, text: str) -> None:
         "Display text in tooltip window"
         self.text = text
         if self.tipwindow or not self.text:
@@ -31,14 +31,14 @@ class ToolTip(object):
         )
         label.pack(ipadx=1)
 
-    def hidetip(self):
+    def hidetip(self) -> None:
         tw = self.tipwindow
         self.tipwindow = None
         if tw:
             tw.destroy()
 
 
-def CreateToolTip(widget, text):
+def CreateToolTip(widget: Widget, text: str) -> None:
     toolTip = ToolTip(widget)
 
     def enter(event):

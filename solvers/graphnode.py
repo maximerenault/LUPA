@@ -11,18 +11,20 @@ class GraphNode:
         self.listened = False
         self.listener_name = ""
 
-    def add_edge(self, edge: GraphEdge):
+    def add_edge(self, edge: GraphEdge) -> None:
+        """Add an edge to the node."""
         self.edges.append(edge)
 
-    def set_type(self, type: str):
+    def set_type(self, type: str) -> None:
+        """Set the type of the node."""
         self.type = type
 
-    def __str__(self):
+    def __str__(self) -> str:
         lastr = "GN_" + self.type + "["
         for edge in self.edges:
             lastr += str(edge) + ", "
         lastr += "]"
         return lastr
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return str(self)

@@ -1,6 +1,5 @@
 import numpy as np
-import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, Event, Canvas, StringVar, Label, SUNKEN, PhotoImage
 
 
 class GridZoom(ttk.Frame):
@@ -8,11 +7,11 @@ class GridZoom(ttk.Frame):
     a canvas, a dotted background and a moving
     and zooming function."""
 
-    def __init__(self, mainframe):
+    def __init__(self, mainframe: ttk.Frame) -> None:
         """Initialize the main Frame"""
         ttk.Frame.__init__(self, master=mainframe)
         # Create canvas
-        self.canvas = tk.Canvas(self.master, highlightthickness=0)
+        self.canvas = Canvas(self.master, highlightthickness=0)
         self.canvas.grid(row=0, column=0, sticky="nswe")
         self.canvas.update()  # wait till canvas is created
         # Make the canvas expandable
@@ -43,16 +42,16 @@ class GridZoom(ttk.Frame):
         self.reticle = [0 for _ in range(4)]
         self.draw_reticle()
         # Create a status bar
-        self.status = tk.StringVar()
+        self.status = StringVar()
         self.set_status()
-        statusbar = tk.Label(
-            self.master, textvariable=self.status, anchor="w", relief=tk.SUNKEN
+        statusbar = Label(
+            self.master, textvariable=self.status, anchor="w", relief=SUNKEN
         )
         statusbar.grid(row=1, column=0, sticky="we")
         self.show_background()
         # self.show_frontground()
 
-    def set_status(self):
+    def set_status(self) -> None:
         self.cx, self.cy = self.pix2coord(int(self.width / 2), int(self.height / 2))
         self.status.set(
             f"Position : x = {-self.x-1+int(self.width/2)} , \
@@ -60,7 +59,7 @@ y = {-int(self.height/2)+self.y+1} , cx = {self.cx:.2f} , \
 cy = {self.cy:.2f} , Scale : {self.imscale:.2f}"
         )
 
-    def resize(self, event=None):
+    def resize(self, event: Event = None) -> tuple[int, int]:
         dw = self.canvas.winfo_width() - self.width
         dh = self.canvas.winfo_height() - self.height
         dx = dw // 2
@@ -83,13 +82,13 @@ cy = {self.cy:.2f} , Scale : {self.imscale:.2f}"
         self.canvas.update()
         return dx, dy
 
-    def move_from(self, event):
+    def move_from(self, event: Event) -> None:
         """Remember previous coordinates for scrolling with the mouse"""
         self.prevx = event.x
         self.prevy = event.y
         self.set_status()
 
-    def move_to(self, event):
+    def move_to(self, event: Event) -> None:
         """Drag (move) canvas to the new position"""
         self.x += event.x - self.prevx
         self.y += event.y - self.prevy
@@ -98,7 +97,7 @@ cy = {self.cy:.2f} , Scale : {self.imscale:.2f}"
         self.set_status()
         self.show_background()
 
-    def gridwheel(self, event):
+    def gridwheel(self, event: Event) -> None:
         """Zoom with mouse wheel"""
         x = self.canvas.canvasx(event.x)
         y = self.canvas.canvasy(event.y)
@@ -123,8 +122,8 @@ cy = {self.cy:.2f} , Scale : {self.imscale:.2f}"
         self.set_status()
         self.show_background()
 
-    def show_background(self, event=None):
-        img = tk.PhotoImage(width=self.width, height=self.height)
+    def show_background(self, event: Event = None) -> None:
+        img = PhotoImage(width=self.width, height=self.height)
         sp = self.pixgrid
         ds = self.dotsize
 
@@ -158,7 +157,7 @@ cy = {self.cy:.2f} , Scale : {self.imscale:.2f}"
         self.canvas.lower(imageid)  # set image into background
         self.canvas.bckgnd = img  # prevent garbage collection
 
-    def draw_reticle(self, event=None):
+    def draw_reticle(self, event: Event = None) -> None:
         w = self.width // 2
         h = self.height // 2
         for i in range(4):
@@ -171,7 +170,7 @@ cy = {self.cy:.2f} , Scale : {self.imscale:.2f}"
                 tags="reticle",
             )
 
-    def show_frontground(self, event=None):
+    def show_frontground(self, event: Event = None) -> None:
         w = self.width // 2
         h = self.height // 2
         for i in range(4):
@@ -185,7 +184,7 @@ cy = {self.cy:.2f} , Scale : {self.imscale:.2f}"
             )
             self.canvas.lift(id)
 
-    def coord2pix(self, coordarray: np.ndarray):
+    def coord2pix(self, coordarray: np.ndarray) -> np.ndarray:
         """
         Takes coordinates in 2D array like [x0,y0,x1,y1,...]
         and returns pixel coordinates array in same shape.
@@ -199,7 +198,7 @@ cy = {self.cy:.2f} , Scale : {self.imscale:.2f}"
         ).astype(int)
         return pixarray
 
-    def pix2coord(self, pixx: int, pixy: int, dtype=float):
+    def pix2coord(self, pixx: int, pixy: int) -> tuple[float, float]:
         # 1 pixel difference because of the background
         coordx = (pixx - self.dotsize // 2 - self.x) / self.pixgrid
         # again Minus because y inverted

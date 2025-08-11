@@ -3,38 +3,35 @@ class CalculatorException(Exception):
 
 
 class BadNumberError(CalculatorException):
-    def __init__(self, number):
-        super().__init__("unable to scan number: {}".format(number))
+    def __init__(self, number: str) -> None:
+        super().__init__(f"unable to scan number: {number}")
 
 
 class BadFunctionError(CalculatorException):
-    def __init__(self, func, suppd_func):
+    def __init__(self, func: str, suppd_func: list) -> None:
         super().__init__(
-            "unexpected function {}, list of supported functions: {}".format(
-                repr(func), repr(suppd_func)
-            )
+            f"unexpected function {func}, list of supported functions: {suppd_func}"
         )
 
 
 class UnexpectedCharacterError(CalculatorException):
-    def __init__(self, char, expected=[]):
+    def __init__(self, char: str, expected: list = None) -> None:
         if expected:
-            super().__init__(
-                "unexpected character {}, expected: {}".format(
-                    repr(char), repr(expected)
-                )
-            )
+            super().__init__(f"unexpected character {char}, expected: {expected}")
         else:
-            super().__init__("unexpected character: {}".format(char))
+            super().__init__(f"unexpected character: {char}")
 
 
 class UnexpectedEndError(CalculatorException):
-    def __init__(self, expected):
-        super().__init__("found end, but expected: {}".format(repr(expected)))
+    def __init__(self, expected: list) -> None:
+        super().__init__(f"found end, but expected: {repr(expected)}")
 
 
 class WrongArgsLenError(CalculatorException):
-    def __init__(self, got, expected):
-        super().__init__(
-            "got {} arguments, but expected {}".format(repr(got), repr(expected))
-        )
+    def __init__(self, got: int, expected: int) -> None:
+        super().__init__(f"got {got} arguments, but expected {expected}")
+
+
+class ReadOnlyError(CalculatorException):
+    def __init__(self, name: str) -> None:
+        super().__init__(f"cannot modify read-only variable: {name}")

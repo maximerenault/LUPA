@@ -7,7 +7,7 @@ from bisect import bisect_left, bisect_right
 
 
 class CircuitGraph:
-    def __init__(self, cnodes, celems) -> None:
+    def __init__(self, cnodes: list[Node], celems: list[Wire]) -> None:
         """
         A class that contains a directional graph representation of the circuit
         and allows for communication with the circuit solver.
@@ -17,7 +17,9 @@ class CircuitGraph:
         """
         self.nodes, self.edges = self.convert_circuit_to_graph(cnodes, celems)
 
-    def convert_circuit_to_graph(self, cnodes: list[Node], celems: list[Wire]):
+    def convert_circuit_to_graph(
+        self, cnodes: list[Node], celems: list[Wire]
+    ) -> tuple[list[GraphNode], list[GraphEdge]]:
         cnodes = sorted(cnodes)
         nodes, edges = [], []
         edgedict = {celem: [-1, -1] for celem in celems if type(celem) is not Wire}
@@ -68,7 +70,9 @@ class CircuitGraph:
 
         return nodes, edges
 
-    def graph_max_len_non_branching_paths(self) -> tuple[list, list]:
+    def graph_max_len_non_branching_paths(
+        self,
+    ) -> tuple[list[list[GraphEdge]], list[list[int]]]:
         """
         Naive algorithm for maximal non-branching paths in
         a graph from : https://rosalind.info/problems/ba3m/

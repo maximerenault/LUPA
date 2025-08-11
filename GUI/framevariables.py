@@ -1,11 +1,14 @@
-from tkinter import ttk
-import tkinter as tk
+from tkinter import ttk, END, Event
 from utils.calculator import calculator
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from GUI.drawingboard import DrawingBoard
 
 
 class FrameVariables(ttk.Frame):
 
-    def __init__(self, master, drbd):
+    def __init__(self, master: ttk.Frame, drbd: "DrawingBoard") -> None:
         super().__init__(master)
 
         # Treeview for constants and variables
@@ -47,21 +50,21 @@ class FrameVariables(ttk.Frame):
         # Initialize with constants and variables from calculator
         self.initialize_from_calculator()
 
-    def initialize_from_calculator(self):
+    def initialize_from_calculator(self) -> None:
         for name, value in calculator.constants.items():
             self.add_constant(name, value)
         for name, value in calculator.variables.items():
             self.add_variable(name, value)
 
-    def add_constant(self, name: str = "", value: str | float = ""):
+    def add_constant(self, name: str = "", value: str | float = "") -> None:
         C = "C" + str(self.cC)
         self.cC += 1
-        self.tree.insert("const", index=tk.END, iid=C, text=name, values=(value,))
+        self.tree.insert("const", index=END, iid=C, text=name, values=(value,))
         self.tree.item("const", open=True)
         if name == "":
             self.enter_edition(C)
 
-    def remove_constant(self, C: str):
+    def remove_constant(self, C: str) -> None:
         if not self.tree.exists(C):
             return
         name = self.tree.item(C).get("text", "")
@@ -74,15 +77,15 @@ class FrameVariables(ttk.Frame):
             return
         self.tree.delete(C)
 
-    def add_variable(self, name: str = "", value: str = ""):
+    def add_variable(self, name: str = "", value: str = "") -> None:
         V = "V" + str(self.cV)
         self.cV += 1
-        self.tree.insert("var", index=tk.END, iid=V, text=name, values=(value,))
+        self.tree.insert("var", index=END, iid=V, text=name, values=(value,))
         self.tree.item("var", open=True)
         if name == "":
             self.enter_edition(V)
 
-    def remove_variable(self, V: str):
+    def remove_variable(self, V: str) -> None:
         if not self.tree.exists(V):
             return
         name = self.tree.item(V).get("text", "")
@@ -95,7 +98,7 @@ class FrameVariables(ttk.Frame):
             return
         self.tree.delete(V)
 
-    def remove_selected(self):
+    def remove_selected(self) -> None:
         selected = self.tree.focus()
         if not selected:
             return
@@ -104,7 +107,7 @@ class FrameVariables(ttk.Frame):
         elif selected.startswith("V"):
             self.remove_variable(selected)
 
-    def on_double_click(self, event):
+    def on_double_click(self, event: Event) -> None:
         elem_iid = self.tree.focus()
         if elem_iid in ["const", "var", "elvar"] or not elem_iid:
             return
@@ -116,7 +119,7 @@ class FrameVariables(ttk.Frame):
             return
         self.enter_edition(elem_iid)
 
-    def enter_edition(self, iid: str):
+    def enter_edition(self, iid: str) -> None:
         param_dic = self.tree.item(iid)
         elem_text = param_dic["text"]
         elem_value = param_dic["values"][0]
@@ -125,8 +128,8 @@ class FrameVariables(ttk.Frame):
         value_entry = ttk.Entry(self.tree)
         name_entry.insert(0, elem_text)
         value_entry.insert(0, elem_value)
-        name_entry.select_range(0, tk.END)
-        value_entry.select_range(0, tk.END)
+        name_entry.select_range(0, END)
+        value_entry.select_range(0, END)
         name_entry.focus()
         name_entry.bind(
             "<FocusOut>", lambda e: self.on_focus_out(e, iid, name_entry, value_entry)
@@ -146,8 +149,8 @@ class FrameVariables(ttk.Frame):
         )
 
     def on_focus_out(
-        self, event: tk.Event, iid: str, name_entry: ttk.Entry, value_entry: ttk.Entry
-    ):
+        self, event: Event, iid: str, name_entry: ttk.Entry, value_entry: ttk.Entry
+    ) -> None:
         if event.widget.focus_get() in [name_entry, value_entry]:
             return
         name_entry.destroy()
@@ -156,15 +159,15 @@ class FrameVariables(ttk.Frame):
         self.tree.selection_set(iid)
 
     def on_enter_press(
-        self, event: tk.Event, iid: str, name_entry: ttk.Entry, value_entry: ttk.Entry
-    ):
+        self, event: Event, iid: str, name_entry: ttk.Entry, value_entry: ttk.Entry
+    ) -> None:
         new_name = name_entry.get()
         new_value = value_entry.get()
         self.edit_variable(iid, new_name, new_value)
         name_entry.destroy()
         value_entry.destroy()
 
-    def edit_variable(self, iid: str, name: str, value: str):
+    def edit_variable(self, iid: str, name: str, value: str) -> None:
         if not iid:
             return
         elem_parent = self.tree.parent(iid)
@@ -194,7 +197,7 @@ class FrameVariables(ttk.Frame):
         # Update UI after successful calculator change
         self.tree.item(iid, text=name, values=(value,))
 
-    def reinitialize(self):
+    def reinitialize(self) -> None:
         self.cC = 0
         self.cV = 0
         for child in list(self.tree.get_children("const")):
@@ -202,7 +205,7 @@ class FrameVariables(ttk.Frame):
         for child in list(self.tree.get_children("var")):
             self.tree.delete(child)
 
-    def save_variables(self, data: dict):
+    def save_variables(self, data: dict) -> None:
         data["constants"] = {}
         data["variables"] = {}
         for child in self.tree.get_children("const"):
@@ -216,13 +219,11 @@ class FrameVariables(ttk.Frame):
             if name:
                 data["variables"][name] = value
 
-    def load_variables(self, data: dict):
+    def load_variables(self, data: dict) -> None:
         self.reinitialize()
         for name, value in data.get("constants", {}).items():
             self.add_constant(name, value)
         for name, value in data.get("variables", {}).items():
             self.add_variable(name, value)
-        # Rebuild the calculator state from loaded variables
-        calculator.constants = data.get("constants", {})
-        calculator.variables = data.get("variables", {})
-        calculator._update_tokens()
+        calculator.load_constants(data.get("constants", {}))
+        calculator.load_variables(data.get("variables", {}))

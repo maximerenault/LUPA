@@ -68,6 +68,7 @@ from exceptions.calculatorexceptions import (
     BadFunctionError,
     WrongArgsLenError,
     UnexpectedEndError,
+    ReadOnlyError,
 )
 
 # Public API exports
@@ -304,9 +305,7 @@ class Calculator:
             # Allow no-op set to same value, but block changes
             current = self.constants.get(name)
             if current is None or float(value) != float(current):
-                raise ValueError(
-                    f"Constant '{name}' is read-only and cannot be modified."
-                )
+                raise ReadOnlyError(name)
             return
         try:
             num_val = float(value)
@@ -321,9 +320,7 @@ class Calculator:
         if name in self._protected_variables:
             current = self.variables.get(name)
             if current is None or expr != current:
-                raise ValueError(
-                    f"Variable '{name}' is read-only and cannot be modified."
-                )
+                raise ReadOnlyError(name)
             return
         self.variables[name] = expr
         self._update_tokens()
@@ -344,6 +341,44 @@ class Calculator:
             del self.variables[name]
             self._update_tokens()
 
+    def load_constants(self, constants: Dict[str, float]):
+        """Load multiple constants into the calculator."""
+        self.clear_constants()
+        for name, value in constants.items():
+            try:
+                value = float(value)
+            except (TypeError, ValueError):
+                raise ValueError(f"Constant '{name}' must be a number.")
+            try:
+                self.set_constant(name, value)
+            except ReadOnlyError:
+                continue
+        self._update_tokens()
+
+    def load_variables(self, variables: Dict[str, str]):
+        """Load multiple variables into the calculator."""
+        self.clear_variables()
+        for name, expr in variables.items():
+            try:
+                self.set_variable(name, expr)
+            except ReadOnlyError:
+                continue
+        self._update_tokens()
+
+    def clear_constants(self):
+        """Clear all constants except protected ones."""
+        for name in list(self.constants.keys()):
+            if name not in self._protected_constants:
+                del self.constants[name]
+        self._update_tokens()
+
+    def clear_variables(self):
+        """Clear all variables except protected ones."""
+        for name in list(self.variables.keys()):
+            if name not in self._protected_variables:
+                del self.variables[name]
+        self._update_tokens()
+
     def calculate(self, expression: str, return_vars: bool = False):
         """Evaluates a mathematical expression and returns the result.
 
@@ -358,13 +393,27 @@ class Calculator:
         >>> calc.calculate('3 * (1 + 6 / 3)')
         9.0
         """
+        if expression == "t":
+
+            def result(t):
+                return t
+
+            vars = ["t"]
+            if return_vars:
+                return result, vars
+            return result
+
         scan = Scanner(expression, self).scan()
         result, vars = Parser(scan, self).parse()
 
         if return_vars:
             return (result(), vars) if not vars else (result, vars)
 
-        return result() if not vars else result
+        if vars:
+            vars_func = [self.calculate(self.variables[var]) for var in vars]
+            return lambda t: result(*[f(t) for f in vars_func])
+
+        return result()
 
 
 # Default global calculator instance
@@ -564,6 +613,9 @@ class Parser(BaseParser):
 
         for cons in self._take(lambda t: t in self.calc.constants):
             value = self.calc.constants[cons]
+            assert isinstance(
+                value, (int, float)
+            ), f"Invalid constant {cons}: {value}, type: {type(value)}"
             return lambda *args: value
 
         for func in self._take(lambda t: t in self.calc.functions):

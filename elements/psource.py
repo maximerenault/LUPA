@@ -1,6 +1,10 @@
 import numpy as np
 from elements.ground import Ground
 from elements.node import Node
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from GUI.drawingboard import DrawingBoard
 
 
 class PSource(Ground):
@@ -15,7 +19,7 @@ class PSource(Ground):
         self.name = "P"
         self.widths = [1, 2]
 
-    def draw(self, drbd):
+    def draw(self, drbd: "DrawingBoard") -> None:
         xs, ys, xe, ye, x1, y1, x2, y2 = drbd.coord2pix(self.get_psource_coords())
         self.ids.append(
             drbd.canvas.create_line(
@@ -29,13 +33,13 @@ class PSource(Ground):
         )
         self.afterdraw(drbd)
 
-    def redraw(self, drbd):
+    def redraw(self, drbd: "DrawingBoard") -> None:
         xs, ys, xe, ye, x1, y1, x2, y2 = drbd.coord2pix(self.get_psource_coords())
         drbd.canvas.coords(self.ids[0], xs, ys, xe, ye)
         drbd.canvas.coords(self.ids[1], x1, y1, x2, y2)
         self.afterredraw(drbd)
 
-    def get_psource_coords(self):
+    def get_psource_coords(self) -> np.ndarray:
         coords = self.getcoords()
         vec = coords[2:] - coords[:2]
         length = np.linalg.norm(vec)
@@ -67,8 +71,8 @@ class PSource(Ground):
     # def get_source(self):
     #     return self.source
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "PSc" + str(self.ids[0])
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return str(self)

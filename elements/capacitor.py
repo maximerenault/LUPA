@@ -1,15 +1,22 @@
 from elements.wire import Wire
+from elements.node import Node
 import numpy as np
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from GUI.drawingboard import DrawingBoard
 
 
 class Capacitor(Wire):
-    def __init__(self, node1, node2, C, active: bool = False) -> None:
+    def __init__(
+        self, node1: Node, node2: Node, C: float, active: bool = False
+    ) -> None:
         super().__init__(node1, node2, C, active)
         self.w = 0.2
         self.h = 0.6
         self.widths = [2, 2, 1, 1]
 
-    def draw(self, drbd):
+    def draw(self, drbd: "DrawingBoard") -> None:
         x0, y0, x1, y1, x2, y2, x3, y3 = self.get_cap_coords()
         x01 = (x0 + x3) / 2
         y01 = (y0 + y3) / 2
@@ -31,7 +38,7 @@ class Capacitor(Wire):
         self.ids.append(drbd.canvas.create_line(x10, y10, x11, y11, tags="circuit"))
         self.afterdraw(drbd)
 
-    def redraw(self, drbd):
+    def redraw(self, drbd: "DrawingBoard") -> None:
         x0, y0, x1, y1, x2, y2, x3, y3 = self.get_cap_coords()
         x01 = (x0 + x3) / 2
         y01 = (y0 + y3) / 2
@@ -50,7 +57,7 @@ class Capacitor(Wire):
 
         self.afterredraw(drbd)
 
-    def get_cap_coords(self):
+    def get_cap_coords(self) -> np.ndarray:
         w = self.w
         h = self.h
         coords = self.getcoords()
@@ -67,8 +74,8 @@ class Capacitor(Wire):
         p3 = mid - w / 2 * vec - h / 2 * vor
         return np.concatenate((p0, p1, p2, p3))
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "C" + str(self.ids[0])
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return str(self)

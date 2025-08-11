@@ -1,16 +1,23 @@
 from elements.wire import Wire
+from elements.node import Node
 import numpy as np
 import tkinter as tk
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from GUI.drawingboard import DrawingBoard
 
 
 class Inductor(Wire):
-    def __init__(self, node1, node2, L, active=False) -> None:
+    def __init__(
+        self, node1: Node, node2: Node, L: float, active: bool = False
+    ) -> None:
         super().__init__(node1, node2, L, active)
         self.w = 0.7
         self.h = 0.3
         self.widths = [1, 1, 2, 2, 2]
 
-    def draw(self, drbd):
+    def draw(self, drbd: "DrawingBoard") -> None:
         x0, y0, x1, y1, x2, y2, x3, y3, x4, y4, x5, y5, x6, y6, x7, y7 = drbd.coord2pix(
             self.get_ind_coords()
         )
@@ -59,7 +66,7 @@ class Inductor(Wire):
         )
         self.afterdraw(drbd)
 
-    def redraw(self, drbd):
+    def redraw(self, drbd: "DrawingBoard") -> None:
         x0, y0, x1, y1, x2, y2, x3, y3, x4, y4, x5, y5, x6, y6, x7, y7 = drbd.coord2pix(
             self.get_ind_coords()
         )
@@ -75,7 +82,7 @@ class Inductor(Wire):
         drbd.canvas.itemconfig(self.ids[4], start=angle)
         self.afterredraw(drbd)
 
-    def get_ind_coords(self):
+    def get_ind_coords(self) -> np.ndarray:
         w = self.w
         coords = self.getcoords()
         vec = coords[2:] - coords[:2]
@@ -98,15 +105,15 @@ class Inductor(Wire):
         p7 = mid + w / 2 * vec
         return np.concatenate((p0, p1, p2, p3, p4, p5, p6, p7))
 
-    def get_ind_angle(self):
+    def get_ind_angle(self) -> float:
         x0, y0, x1, y1 = self.getcoords()
         if x1 == x0:
             return -np.pi / 2
         angle = np.arctan((y1 - y0) / (x1 - x0))
         return angle
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "L" + str(self.ids[0])
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return str(self)

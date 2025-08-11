@@ -3,5 +3,5 @@ class SolveFrameException(Exception):
 
 
 class BadNumberError(SolveFrameException):
-    def __init__(self, number):
-        super().__init__("unable to correct number: {}".format(number))
+    def __init__(self, nbrstr: str) -> None:
+        super().__init__(f"unable to correct number: {nbrstr}")

@@ -1,15 +1,24 @@
 import numpy as np
 from elements.wire import Wire
+from elements.node import Node
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from GUI.drawingboard import DrawingBoard
 
 
 class Ground(Wire):
     def __init__(
-        self, node1, node2, value: float | str | None = None, active: bool = False
+        self,
+        node1: Node,
+        node2: Node,
+        value: float | str | None = None,
+        active: bool = False,
     ) -> None:
         super().__init__(node1, node2, value, active)
         self.widths = [1, 1, 1, 1]
 
-    def draw(self, drbd):
+    def draw(self, drbd: "DrawingBoard") -> None:
         xs, ys, xe, ye, x1, y1, x2, y2, x3, y3, x4, y4, x5, y5, x6, y6 = drbd.coord2pix(
             self.get_gnd_coords()
         )
@@ -19,7 +28,7 @@ class Ground(Wire):
         self.ids.append(drbd.canvas.create_line(x5, y5, x6, y6, tags="circuit"))
         self.afterdraw(drbd)
 
-    def redraw(self, drbd):
+    def redraw(self, drbd: "DrawingBoard") -> None:
         xs, ys, xe, ye, x1, y1, x2, y2, x3, y3, x4, y4, x5, y5, x6, y6 = drbd.coord2pix(
             self.get_gnd_coords()
         )
@@ -29,7 +38,7 @@ class Ground(Wire):
         drbd.canvas.coords(self.ids[3], x5, y5, x6, y6)
         self.afterredraw(drbd)
 
-    def get_gnd_coords(self):
+    def get_gnd_coords(self) -> np.ndarray:
         coords = self.getcoords()
         vec = coords[2:] - coords[:2]
         length = np.linalg.norm(vec)
@@ -61,7 +70,7 @@ class Ground(Wire):
         p7 = mid + w / 2 * vec - (h - 0.35) / 2 * vor
         return np.concatenate((p0, p1, p2, p3, p4, p5, p6, p7))
 
-    def setend(self, x, y):
+    def setend(self, x: float, y: float) -> None:
         x0, y0, _, _ = self.getcoords()
         dist = np.sqrt((x - x0) ** 2 + (y - y0) ** 2)
         if dist == 0:
@@ -71,21 +80,21 @@ class Ground(Wire):
             y = y0 + round((y - y0) / dist) * 0.75
             self.nodes[1].setcoords(x, y)
 
-    def drawname(self, drbd):
+    def drawname(self, drbd: "DrawingBoard") -> None:
         x0, y0, x1, y1 = drbd.coord2pix(self.getcoords())
         x = (x0 + 2 * x1) // 3
         y = (y0 + 2 * y1) // 3
         self.nameid = drbd.canvas.create_text(x, y, text=self.name, tags="circuit")
 
-    def redrawname(self, drbd):
+    def redrawname(self, drbd: "DrawingBoard") -> None:
         x0, y0, x1, y1 = drbd.coord2pix(self.getcoords())
         x = (x0 + 2 * x1) // 3
         y = (y0 + 2 * y1) // 3
         drbd.canvas.coords(self.nameid, x, y)
         drbd.canvas.itemconfig(self.nameid, text=self.name)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "Gnd" + str(self.ids[0])
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return str(self)

@@ -2,11 +2,15 @@ from tkinter import ttk
 import tkinter as tk
 from elements.node import Node
 from elements.wire import Wire
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from GUI.drawingboard import DrawingBoard
 
 
 class FrameListeners(ttk.Treeview):
 
-    def __init__(self, master, drbd):
+    def __init__(self, master: ttk.Frame, drbd: "DrawingBoard") -> None:
         super().__init__(master)
         self.heading("#0", text="Listener names")
         self.insert("", 0, "P", text="Pressure")
@@ -23,7 +27,7 @@ class FrameListeners(ttk.Treeview):
         self.Plisteners = {}
         self.Qlisteners = {}
 
-    def add_listener(self, listener_type, element):
+    def add_listener(self, listener_type: str, element: Wire | Node) -> None:
         if listener_type == "P":
             listener_id = f"P{self.cP}"
             element_id = element.id
@@ -42,7 +46,7 @@ class FrameListeners(ttk.Treeview):
         listeners[element_id] = listener_id
         listeners[listener_id] = element
 
-    def remove_listener(self, listener_type, element):
+    def remove_listener(self, listener_type: str, element: Wire | Node) -> None:
         listeners = self.Plisteners if listener_type == "P" else self.Qlisteners
         element_id = element.id if listener_type == "P" else element.ids[0]
         listener_id = listeners.pop(element_id, None)
@@ -50,26 +54,26 @@ class FrameListeners(ttk.Treeview):
             self.delete(listener_id)
             del listeners[listener_id]
 
-    def add_pressure_listener(self, node: Node):
+    def add_pressure_listener(self, node: Node) -> None:
         self.add_listener("P", node)
 
-    def remove_pressure_listener(self, node: Node):
+    def remove_pressure_listener(self, node: Node) -> None:
         self.remove_listener("P", node)
 
-    def add_flow_listener(self, elem: Wire):
+    def add_flow_listener(self, elem: Wire) -> None:
         self.add_listener("Q", elem)
 
-    def remove_flow_listener(self, elem: Wire):
+    def remove_flow_listener(self, elem: Wire) -> None:
         self.remove_listener("Q", elem)
 
-    def on_double_click(self, event):
+    def on_double_click(self, event: tk.Event) -> None:
         elem_iid = self.focus()
         if elem_iid in ["P", "Q"]:
             return
         self.on_motion_activated = False
         self.edit_listener_name(elem_iid)
 
-    def edit_listener_name(self, iid):
+    def edit_listener_name(self, iid: str) -> None:
         param_dic = self.item(iid)
         elem_text = param_dic["text"]
         bbox = self.bbox(iid)
@@ -81,78 +85,78 @@ class FrameListeners(ttk.Treeview):
         entry_edit.bind("<Return>", lambda e: self.on_enter_press(e, iid))
         entry_edit.place(x=bbox[0], y=bbox[1], w=bbox[2], h=bbox[3])
 
-    def on_focus_out(self, event):
+    def on_focus_out(self, event: tk.Event) -> None:
         self.on_motion_activated = True
         event.widget.destroy()
 
-    def on_enter_press(self, event, iid):
+    def on_enter_press(self, event: tk.Event, iid: str) -> None:
         new_text = event.widget.get()
         self.edit_listener(iid, new_text)
         self.on_motion_activated = True
         event.widget.destroy()
 
-    def edit_listener(self, iid, text):
+    def edit_listener(self, iid: str, text: str) -> None:
         if iid:
             elem_parent = self.parent(iid)
             if elem_parent == "P":
-                node = self.Plisteners[iid]
+                node: Node = self.Plisteners[iid]
                 node.listener_name = text
             elif elem_parent == "Q":
-                elem = self.Qlisteners[iid]
+                elem: Wire = self.Qlisteners[iid]
                 elem.listener_name = text
             self.item(iid, text=text)
 
-    def get_elem_iid(self, elem):
+    def get_elem_iid(self, elem: Wire) -> str:
         try:
             return self.Qlisteners[elem]
         except KeyError:
             return ""
 
-    def get_node_iid(self, node):
+    def get_node_iid(self, node: Node) -> str:
         try:
             return self.Plisteners[node]
         except KeyError:
             return ""
 
-    def on_motion(self, event):
+    def on_motion(self, event: tk.Event) -> None:
         if not self.on_motion_activated:
             return
         iid = self.identify_row(event.y)
         if self.last_focus != iid:
             self.update_focus(iid)
 
-    def update_focus(self, iid):
+    def update_focus(self, iid: str) -> None:
         self.focus(iid)
         self.selection_set(iid)
         self.leave_listener(self.last_focus)
         self.enter_listener(iid)
         self.last_focus = iid
 
-    def enter_listener(self, iid):
+    def enter_listener(self, iid: str) -> None:
         if iid:
             elem_parent = self.parent(iid)
             if elem_parent == "P":
-                node = self.Plisteners[iid]
+                node: Node = self.Plisteners[iid]
                 node.radius += 0.1
                 node.redraw(self.drbd)
             elif elem_parent == "Q":
-                elem = self.Qlisteners[iid]
+                elem: Wire = self.Qlisteners[iid]
                 elem.Qsize = 2.0
                 elem.redraw(self.drbd)
 
-    def leave_listener(self, iid):
+    def leave_listener(self, iid: str) -> None:
         if iid:
             elem_parent = self.parent(iid)
             if elem_parent == "P":
-                node = self.Plisteners[iid]
+                node: Node = self.Plisteners[iid]
                 node.radius -= 0.1
                 node.redraw(self.drbd)
             elif elem_parent == "Q":
-                elem = self.Qlisteners[iid]
+                elem: Wire = self.Qlisteners[iid]
                 elem.Qsize = 1.0
                 elem.redraw(self.drbd)
 
-    def reinitialize(self):
+    def reinitialize(self) -> None:
         self.cQ = 0
         self.cP = 0
         for listener_id in list(self.Plisteners.values()):

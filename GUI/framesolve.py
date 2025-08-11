@@ -6,6 +6,10 @@ from exceptions.solveframeexceptions import BadNumberError
 from solvers.circuitgraph import CircuitGraph
 from solvers.circuitsolver import CircuitSolver
 from utils.strings import check_strfloat_pos
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from GUI.drawingboard import DrawingBoard
 
 matplotlib.use("TkAgg")
 
@@ -15,7 +19,7 @@ class FrameSolve(ttk.Frame):
     A class for choosing simulation parameters
     """
 
-    def __init__(self, master, drbd):
+    def __init__(self, master: ttk.Frame, drbd: "DrawingBoard") -> None:
         super().__init__(master)
         self.rowconfigure((0, 2), weight=1)
         self.columnconfigure(0, weight=1)
@@ -121,7 +125,7 @@ class FrameSolve(ttk.Frame):
         self.widget_frame = FrameBase(self, {})
         self.update_widget_list("Solver")
 
-    def update_timestep(self, stringvar):
+    def update_timestep(self, stringvar: tk.StringVar) -> None:
         """
         Update timestep of simulation
         """
@@ -135,7 +139,7 @@ class FrameSolve(ttk.Frame):
         except (ValueError, TypeError):
             raise BadNumberError(dtstr)
 
-    def update_maxtime(self, stringvar):
+    def update_maxtime(self, stringvar: tk.StringVar) -> None:
         """
         Update max time of simulation
         """
@@ -149,13 +153,13 @@ class FrameSolve(ttk.Frame):
         except (ValueError, TypeError):
             raise BadNumberError(mtstr)
 
-    def update_time_integration(self, event: tk.Event):
+    def update_time_integration(self, event: tk.Event) -> None:
         """
         Update time integration scheme
         """
         self.csolver.set_time_integration(event.widget.get())
 
-    def solve(self):
+    def solve(self) -> None:
         # Pre-solving operations : removing wires, creating readable graph
         if len(self.drbd.cgeom.nodes) == 0:
             tk.messagebox.showerror("Error", "No system to solve")
@@ -175,10 +179,10 @@ class FrameSolve(ttk.Frame):
             return
         return
 
-    def export_matrices(self):
+    def export_matrices(self) -> None:
         return
 
-    def update_widget_list(self, key: str = "Clear"):
+    def update_widget_list(self, key: str = "Clear") -> None:
         self.widget_frame.delete_all()
         del self.widget_frame
         config = self.widget_configs[key]

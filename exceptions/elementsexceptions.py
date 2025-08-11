@@ -3,7 +3,5 @@ class ElementsException(Exception):
 
 
 class BadValueTypeError(ElementsException):
-    def __init__(self, got, expected):
-        super().__init__(
-            "expected value type {} and got {}".format(repr(expected), repr(got))
-        )
+    def __init__(self, got: type, expected: type) -> None:
+        super().__init__(f"expected value type {repr(expected)} and got {repr(got)}")

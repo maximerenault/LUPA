@@ -1,11 +1,21 @@
 from bisect import bisect_left
+from tkinter import Event
 import numpy as np
 from exceptions.elementsexceptions import BadValueTypeError
+from elements.node import Node
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from GUI.drawingboard import DrawingBoard
 
 
 class Wire:
     def __init__(
-        self, node1, node2, value: float | str | None = None, active: bool = False
+        self,
+        node1: Node,
+        node2: Node,
+        value: float | str | None = None,
+        active: bool = False,
     ) -> None:
         self.name = ""
         self.nameid = -1
@@ -24,7 +34,7 @@ class Wire:
         self.active = active
         self.set_value(value)
 
-    def drawbbox(self, drbd):
+    def drawbbox(self, drbd: "DrawingBoard") -> None:
         x0, y0, x1, y1, x2, y2, x3, y3 = drbd.coord2pix(self.get_bbox_coords())
         self.bbox = drbd.canvas.create_polygon(
             x0, y0, x1, y1, x2, y2, x3, y3, fill="", outline="", tags="circuit"
@@ -55,11 +65,11 @@ class Wire:
             lambda event, drbd=drbd: self.onElemHoverO(event, drbd),
         )
 
-    def redrawbbox(self, drbd):
+    def redrawbbox(self, drbd: "DrawingBoard") -> None:
         x0, y0, x1, y1, x2, y2, x3, y3 = drbd.coord2pix(self.get_bbox_coords())
         drbd.canvas.coords(self.bbox, x0, y0, x1, y1, x2, y2, x3, y3)
 
-    def drawQ(self, drbd):
+    def drawQ(self, drbd: "DrawingBoard") -> None:
         x0, y0, x1, y1, x2, y2 = drbd.coord2pix(self.get_Q_coords())
         if self.listened:
             fill = "red"
@@ -69,7 +79,7 @@ class Wire:
             x0, y0, x1, y1, x2, y2, fill=fill, outline="", width=2, tags="circuit"
         )
 
-    def redrawQ(self, drbd):
+    def redrawQ(self, drbd: "DrawingBoard") -> None:
         if self.listened:
             drbd.canvas.itemconfig(self.Qid, fill="red")
             x0, y0, x1, y1, x2, y2 = drbd.coord2pix(self.get_Q_coords())
@@ -77,44 +87,44 @@ class Wire:
         else:
             drbd.canvas.itemconfig(self.Qid, fill="")
 
-    def drawname(self, drbd):
+    def drawname(self, drbd: "DrawingBoard") -> None:
         x0, y0, x1, y1 = drbd.coord2pix(self.getcoords())
         x = (x0 + x1) // 2
         y = (y0 + y1) // 2
         self.nameid = drbd.canvas.create_text(x, y, text=self.name, tags="circuit")
 
-    def redrawname(self, drbd):
+    def redrawname(self, drbd: "DrawingBoard") -> None:
         x0, y0, x1, y1 = drbd.coord2pix(self.getcoords())
         x = (x0 + x1) // 2
         y = (y0 + y1) // 2
         drbd.canvas.coords(self.nameid, x, y)
         drbd.canvas.itemconfig(self.nameid, text=self.name)
 
-    def draw(self, drbd):
+    def draw(self, drbd: "DrawingBoard") -> None:
         x0, y0, x1, y1 = drbd.coord2pix(self.getcoords())
         self.ids.append(drbd.canvas.create_line(x0, y0, x1, y1, tags="circuit"))
         self.afterdraw(drbd)
 
-    def afterdraw(self, drbd):
+    def afterdraw(self, drbd: "DrawingBoard") -> None:
         for node in self.nodes:
             node.draw(drbd)
         self.drawQ(drbd)
         self.drawname(drbd)
         self.drawbbox(drbd)
 
-    def redraw(self, drbd):
+    def redraw(self, drbd: "DrawingBoard") -> None:
         x0, y0, x1, y1 = drbd.coord2pix(self.getcoords())
         drbd.canvas.coords(self.ids[0], x0, y0, x1, y1)
         self.afterredraw(drbd)
 
-    def afterredraw(self, drbd):
+    def afterredraw(self, drbd: "DrawingBoard") -> None:
         for node in self.nodes:
             node.redraw(drbd)
         self.redrawQ(drbd)
         self.redrawname(drbd)
         self.redrawbbox(drbd)
 
-    def get_bbox_coords(self):
+    def get_bbox_coords(self) -> np.ndarray:
         coords = self.getcoords()
         vec = coords[2:] - coords[:2]
         length = np.linalg.norm(vec)
@@ -131,7 +141,7 @@ class Wire:
         p3 = mid - w / 2 * vec - h / 2 * vor
         return np.concatenate((p0, p1, p2, p3))
 
-    def get_Q_coords(self):
+    def get_Q_coords(self) -> np.ndarray:
         coords = self.getcoords()
         vec = coords[2:] - coords[:2]
         length = np.linalg.norm(vec)
@@ -148,38 +158,38 @@ class Wire:
         p2 = mid + sign * (w / 2 - 0.1 * self.Qsize) * vec + h / 2 * vor
         return np.concatenate((p0, p1, p2))
 
-    def getcoords(self):
+    def getcoords(self) -> np.ndarray:
         return np.concatenate((self.nodes[0].getcoords(), self.nodes[1].getcoords()))
 
-    def setstart(self, x, y):
+    def setstart(self, x: float, y: float) -> None:
         self.nodes[0].setcoords(x, y)
 
-    def setend(self, x, y):
+    def setend(self, x: float, y: float) -> None:
         self.nodes[1].setcoords(x, y)
 
-    def get_node_id(self, node):
+    def get_node_id(self, node: Node) -> int:
         if node == self.nodes[0]:
             return 0
         else:
             return 1
 
-    def get_other_end(self, node):
+    def get_other_end(self, node: Node) -> Node:
         return self.nodes[(self.get_node_id(node) + 1) % 2]
 
-    def get_listenP(self, pos):
+    def get_listenP(self, pos: int) -> bool:
         return self.nodes[pos].listened
 
-    def set_listenP(self, pos, val, drbd):
+    def set_listenP(self, pos: int, val: int, drbd: "DrawingBoard") -> None:
         self.nodes[pos].set_listened(val)
         if val:
             drbd.frameListeners.add_pressure_listener(self.nodes[pos])
         else:
             drbd.frameListeners.remove_pressure_listener(self.nodes[pos])
 
-    def get_listenQ(self):
+    def get_listenQ(self) -> bool:
         return self.listened
 
-    def set_listenQ(self, val, drbd):
+    def set_listenQ(self, val: int, drbd: "DrawingBoard") -> None:
         oldval = self.listened
         self.listened = val
         if oldval == 0 and val != 0:
@@ -187,7 +197,7 @@ class Wire:
         elif oldval != 0 and val == 0:
             drbd.frameListeners.remove_flow_listener(self)
 
-    def onElemClick(self, event, drbd):
+    def onElemClick(self, event: Event, drbd: "DrawingBoard") -> None:
         if drbd.drag_function == "Edit":
             id = bisect_left(drbd.cgeom.elems, self.ids[0], key=lambda a: a.ids[0])
             if id == len(drbd.cgeom.elems):
@@ -197,11 +207,11 @@ class Wire:
             self.prevcoords = self.getcoords()
             self.x0, self.y0 = drbd.pix2coord(event.x, event.y)
 
-    def onElemRelease(self, event, drbd):
+    def onElemRelease(self, event: Event, drbd: "DrawingBoard") -> None:
         if drbd.drag_function == "Edit":
             drbd.nomove = False
 
-    def onElemMotion(self, event, drbd):
+    def onElemMotion(self, event: Event, drbd: "DrawingBoard") -> None:
         if drbd.drag_function == "Edit":
             x1, y1 = drbd.pix2coord(event.x, event.y)
             self.setstart(
@@ -214,30 +224,30 @@ class Wire:
             )
             self.redraw(drbd)
 
-    def onElemHoverI(self, event, drbd):
+    def onElemHoverI(self, event: Event, drbd: "DrawingBoard") -> None:
         if drbd.drag_function == "Edit":
             for id, w in zip(self.ids, self.widths):
                 drbd.canvas.itemconfig(id, width=w + 2)
 
-    def onElemHoverO(self, event, drbd):
+    def onElemHoverO(self, event: Event, drbd: "DrawingBoard") -> None:
         if drbd.drag_function == "Edit":
             for id, w in zip(self.ids, self.widths):
                 drbd.canvas.itemconfig(id, width=w)
 
-    def delete(self, drbd):
+    def delete(self, drbd: "DrawingBoard") -> None:
         for id in self.ids:
             drbd.canvas.delete(id)
         drbd.canvas.delete(self.bbox)
         drbd.canvas.delete(self.nameid)
         drbd.canvas.delete(self.Qid)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "W" + str(self.ids[0])
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return str(self)
 
-    def set_value(self, value):
+    def set_value(self, value: float | str | None) -> None:
         if not self.active and not (isinstance(value, float) or value is None):
             try:
                 value = float(value)
@@ -249,13 +259,13 @@ class Wire:
         # source = sp.interpolate.CubicSpline(x, y, extrapolate="periodic")
         # self.source = source
 
-    def get_value(self):
+    def get_value(self) -> float | str | None:
         return self.value
 
-    def set_name(self, name: str):
+    def set_name(self, name: str) -> None:
         self.name = name
 
-    def to_dict(self, nodes_list: list) -> dict:
+    def to_dict(self, nodes_list: list[Node]) -> dict:
         my_dict = {}
         my_dict["type"] = self.__class__.__name__
         my_dict["name"] = self.name

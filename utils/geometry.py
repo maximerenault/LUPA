@@ -3,7 +3,7 @@ from math import sqrt
 import numpy as np
 
 
-def intersect(elem1: Wire, elem2: Wire):
+def intersect(elem1: Wire, elem2: Wire) -> tuple[float, float]:
     """
     Returns intersection coordinates
     with special cases for avoiding
@@ -40,7 +40,7 @@ def intersect(elem1: Wire, elem2: Wire):
     return (x1, y1)
 
 
-def distance(x1: float, y1: float, x2: float, y2: float):
+def distance(x1: float, y1: float, x2: float, y2: float) -> float:
     """
     Returns the distance between
     (x1,y1) and (x2,y2)
@@ -57,7 +57,7 @@ def dotprod(
     y3: float,
     x4: float,
     y4: float,
-):
+) -> float:
     """
     Returns the dot product of vectors
     (x2-x1,y2-y1) and (x4-x3,y4-y3)
@@ -65,7 +65,7 @@ def dotprod(
     return (x2 - x1) * (x4 - x3) + (y2 - y1) * (y4 - y3)
 
 
-def point_on_elem(elem: Wire, x0: float, y0: float):
+def point_on_elem(elem: Wire, x0: float, y0: float) -> bool:
     """
     Checks if a point (x0,y0) is
     on the line of elem
@@ -81,7 +81,9 @@ def point_on_elem(elem: Wire, x0: float, y0: float):
     return False
 
 
-def start_from_elem(drbd, x0: float, y0: float):
+def start_from_elem(
+    elems: list[Wire], x0: float, y0: float
+) -> tuple[float, float, int]:
     """
     Returns position and direction if starting from an
     existing element
@@ -89,7 +91,7 @@ def start_from_elem(drbd, x0: float, y0: float):
     # Direction of the starting element
     # by default it points left (so we draw to the right)
     eldir = 3
-    for el in drbd.cgeom.elems[::-1]:
+    for el in elems[::-1]:
         if point_on_elem(el, x0, y0):
             xs, ys, xe, ye = el.getcoords()
             if xs == xe:
@@ -122,7 +124,7 @@ def start_from_elem(drbd, x0: float, y0: float):
     return x0, y0, eldir
 
 
-def elem_init_pos(drbd, elem: Wire, startdir: int):
+def elem_init_pos(elems: list[Wire], elem: Wire, startdir: int) -> None:
     """
     This method tries 4 cardinal directions for initial
     positionning of the element
@@ -137,7 +139,7 @@ def elem_init_pos(drbd, elem: Wire, startdir: int):
     while direction < 4:
         x1, y1 = directions[direction]
         elem.setend(x1, y1)
-        for el in drbd.cgeom.elems:
+        for el in elems:
             tempx, tempy = intersect(elem, el)
             if distance(x0, y0, tempx, tempy) <= distance(x0, y0, x1, y1):
                 x1 = tempx

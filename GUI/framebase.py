@@ -23,7 +23,7 @@ class FrameBase(ttk.Frame):
         combobox_options: dict = None,
         checkbox_options: dict = None,
         radio_options: dict = None,
-    ):
+    ) -> None:
         """Initializes the FrameBase with a layout configuration and widget options.
 
         Args:
@@ -58,7 +58,7 @@ class FrameBase(ttk.Frame):
         self.place_widgets()
         self.columnconfigure(0, weight=1)
 
-    def delete_all(self):
+    def delete_all(self) -> None:
         """Deletes all widgets from the frame."""
         for widget_dict in [
             self.labels,
@@ -74,7 +74,7 @@ class FrameBase(ttk.Frame):
                 widget.destroy()
             widget_dict.clear()
 
-    def place_widgets(self):
+    def place_widgets(self) -> None:
         """Places the widgets in the frame based on the layout configuration."""
         for widget_id, config in self.layout_config.items():
             widget_type = config.get("type")
@@ -82,7 +82,9 @@ class FrameBase(ttk.Frame):
             grid_options = config.get("grid", {})
             self.create_widget(widget_type, widget_id, options, grid_options)
 
-    def create_widget(self, widget_type, widget_id, options, grid_options):
+    def create_widget(
+        self, widget_type: str, widget_id: str, options: dict, grid_options: dict
+    ) -> None:
         """Creates and places a widget in the frame based on its type."""
         widget_creation_map = {
             "label": self.create_label,
@@ -97,13 +99,13 @@ class FrameBase(ttk.Frame):
         if creation_func:
             creation_func(widget_id, options, grid_options)
 
-    def create_label(self, key, options, grid_options):
+    def create_label(self, key: str, options: dict, grid_options: dict) -> None:
         """Creates and places a label widget."""
         label = tk.Label(self, text=options.get("text", ""))
         label.grid(**grid_options)
         self.labels[key] = label
 
-    def create_entry(self, key, options, grid_options):
+    def create_entry(self, key: str, options: dict, grid_options: dict) -> None:
         """Creates and places an entry widget."""
         sv = tk.StringVar(value=options.get("insert", ""))
         sv.trace_add("write", lambda *_: options.get("bindfunc", lambda _: None)(sv))
@@ -111,7 +113,7 @@ class FrameBase(ttk.Frame):
         entry.grid(**grid_options)
         self.entries[key] = entry
 
-    def create_plot(self, key, options, grid_options):
+    def create_plot(self, key: str, options: dict, grid_options: dict) -> None:
         """Creates and places a plot widget."""
         fig = Figure(figsize=(2, 1.5), dpi=options.get("dpi", 100), tight_layout=True)
         subplot = fig.add_subplot(111)
@@ -121,7 +123,7 @@ class FrameBase(ttk.Frame):
         canvas.get_tk_widget().grid(**grid_options)
         self.plots[key] = canvas.get_tk_widget()
 
-    def create_button(self, key, options, grid_options):
+    def create_button(self, key: str, options: dict, grid_options: dict) -> None:
         """Creates and places a button widget."""
         button = ttk.Button(
             self,
@@ -131,7 +133,7 @@ class FrameBase(ttk.Frame):
         button.grid(**grid_options)
         self.buttons[key] = button
 
-    def create_combobox(self, key, options, grid_options):
+    def create_combobox(self, key: str, options: dict, grid_options: dict) -> None:
         """Creates and places a combobox widget."""
         combobox = ttk.Combobox(
             self, values=options.get("values", []), state="readonly"
@@ -141,7 +143,7 @@ class FrameBase(ttk.Frame):
         combobox.bind("<<ComboboxSelected>>", options.get("bindfunc", lambda _: None))
         self.combobox[key] = combobox
 
-    def create_checkbox(self, key, options, grid_options):
+    def create_checkbox(self, key: str, options: dict, grid_options: dict) -> None:
         """Creates and places a checkbox widget."""
         var = tk.IntVar(value=options.get("onoff", 0))
         checkbox = ttk.Checkbutton(
@@ -153,7 +155,7 @@ class FrameBase(ttk.Frame):
         checkbox.grid(**grid_options)
         self.checkbox[key] = checkbox
 
-    def create_radio(self, key, options, grid_options):
+    def create_radio(self, key: str, options: dict, grid_options: dict) -> None:
         """Creates and places a radio button widget."""
         radio_frame = ttk.Frame(self)
         var = tk.IntVar(value=options.get("value", 0))
