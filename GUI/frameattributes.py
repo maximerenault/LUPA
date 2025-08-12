@@ -11,6 +11,7 @@ from elements.ground import Ground
 from elements.psource import PSource
 from elements.diode import Diode
 from exceptions.attibutesexceptions import BadNumberError
+from exceptions.calculatorexceptions import CalculatorException
 from utils.strings import check_strint
 import matplotlib
 import utils.calculator as calc
@@ -113,23 +114,135 @@ class FrameAttributes(ttk.Frame):
                     "labsta": {"type": "label", "grid": {"row": 1, "column": 0}},
                     "startx": {"type": "entry", "grid": {"row": 1, "column": 1}},
                     "starty": {"type": "entry", "grid": {"row": 1, "column": 2}},
-                    "labend": {"type": "label", "grid": {"row": 2, "column": 0}},
-                    "endx": {"type": "entry", "grid": {"row": 2, "column": 1}},
-                    "endy": {"type": "entry", "grid": {"row": 2, "column": 2}},
-                    "labval": {"type": "label", "grid": {"row": 3, "column": 0}},
+                    "lablistenPstart": {
+                        "type": "label",
+                        "grid": {"row": 2, "column": 0},
+                    },
+                    "listenPstart": {
+                        "type": "checkbox",
+                        "grid": {"row": 2, "column": 1},
+                    },
+                    "labend": {"type": "label", "grid": {"row": 3, "column": 0}},
+                    "endx": {"type": "entry", "grid": {"row": 3, "column": 1}},
+                    "endy": {"type": "entry", "grid": {"row": 3, "column": 2}},
+                    "lablistenPend": {"type": "label", "grid": {"row": 4, "column": 0}},
+                    "listenPend": {"type": "checkbox", "grid": {"row": 4, "column": 1}},
+                    "lablistenQ": {"type": "label", "grid": {"row": 5, "column": 0}},
+                    "listenQ": {
+                        "type": "radio",
+                        "grid": {
+                            "row": 5,
+                            "column": 1,
+                            "columnspan": 2,
+                            "sticky": "ew",
+                        },
+                    },
+                    "labval": {"type": "label", "grid": {"row": 6, "column": 0}},
                     "value": {
                         "type": "entry",
                         "grid": {
-                            "row": 3,
+                            "row": 6,
                             "column": 1,
                             "columnspan": 2,
+                            "sticky": "ew",
+                        },
+                    },
+                    "read": {
+                        "type": "button",
+                        "grid": {
+                            "row": 7,
+                            "column": 0,
+                            "columnspan": 3,
                             "sticky": "ew",
                         },
                     },
                     "delete": {
                         "type": "button",
                         "grid": {
-                            "row": 4,
+                            "row": 8,
+                            "column": 0,
+                            "columnspan": 3,
+                            "sticky": "ew",
+                        },
+                    },
+                },
+                "rowcol_weights": {
+                    "rows": [],
+                    "rowweights": [],
+                    "cols": [1, 2],
+                    "colweights": [1, 1],
+                },
+            },
+            "DipoleSource": {
+                "layout": {
+                    "labnam": {"type": "label", "grid": {"row": 0, "column": 0}},
+                    "name": {
+                        "type": "entry",
+                        "grid": {
+                            "row": 0,
+                            "column": 1,
+                            "columnspan": 2,
+                            "sticky": "ew",
+                        },
+                    },
+                    "labsta": {"type": "label", "grid": {"row": 1, "column": 0}},
+                    "startx": {"type": "entry", "grid": {"row": 1, "column": 1}},
+                    "starty": {"type": "entry", "grid": {"row": 1, "column": 2}},
+                    "lablistenPstart": {
+                        "type": "label",
+                        "grid": {"row": 2, "column": 0},
+                    },
+                    "listenPstart": {
+                        "type": "checkbox",
+                        "grid": {"row": 2, "column": 1},
+                    },
+                    "labend": {"type": "label", "grid": {"row": 3, "column": 0}},
+                    "endx": {"type": "entry", "grid": {"row": 3, "column": 1}},
+                    "endy": {"type": "entry", "grid": {"row": 3, "column": 2}},
+                    "lablistenPend": {"type": "label", "grid": {"row": 4, "column": 0}},
+                    "listenPend": {"type": "checkbox", "grid": {"row": 4, "column": 1}},
+                    "lablistenQ": {"type": "label", "grid": {"row": 5, "column": 0}},
+                    "listenQ": {
+                        "type": "radio",
+                        "grid": {
+                            "row": 5,
+                            "column": 1,
+                            "columnspan": 2,
+                            "sticky": "ew",
+                        },
+                    },
+                    "labval": {"type": "label", "grid": {"row": 6, "column": 0}},
+                    "value": {
+                        "type": "entry",
+                        "grid": {
+                            "row": 6,
+                            "column": 1,
+                            "columnspan": 2,
+                            "sticky": "ew",
+                        },
+                    },
+                    "source": {
+                        "type": "plot",
+                        "grid": {
+                            "row": 7,
+                            "column": 0,
+                            "columnspan": 3,
+                            "sticky": "ew",
+                        },
+                    },
+                    "read": {
+                        "type": "button",
+                        "grid": {
+                            "row": 8,
+                            "column": 0,
+                            "columnspan": 3,
+                            "sticky": "ew",
+                        },
+                    },
+                    "delete": {
+                        "type": "button",
+                        "grid": {
+                            "row": 9,
                             "column": 0,
                             "columnspan": 3,
                             "sticky": "ew",
@@ -391,7 +504,11 @@ class FrameAttributes(ttk.Frame):
             self.update_attributes()
             return
         el: Wire = self.drbd.cgeom.elems[self.elem]
-        el.set_value(stringvar.get())
+        err = el.set_value(stringvar.get())
+        if err:
+            self.widget_frame.entries["value"].config(bg="orange red")
+        else:
+            self.widget_frame.entries["value"].config(bg="white")
 
     def read_values(self) -> None:
         """
@@ -523,10 +640,15 @@ class FrameAttributes(ttk.Frame):
         self.radio_options["listenQ"]["value"] = int(el.get_listenQ())
 
         if el.active:
-            maxt = self.drbd.frameSolve.csolver.get_maxtime()
-            dt = self.drbd.frameSolve.csolver.get_dt()
-            x = np.arange(0, maxt + dt, dt)
-            y = calc.calculate(el.get_value())(x)
-            self.plot_options["source"]["xy"] = (x, y)
+            try:
+                maxt = self.drbd.frameSolve.csolver.get_maxtime()
+                dt = self.drbd.frameSolve.csolver.get_dt()
+                x = np.arange(0, maxt + dt, dt)
+                y = calc.calculate(el.get_value())(x)
+                self.plot_options["source"]["xy"] = (x, y)
+                if elemtype == "Dipole":
+                    elemtype = "DipoleSource"
+            except CalculatorException:
+                tk.messagebox.showerror("Error", "Invalid expression")
 
         self.update_widget_list(elemtype)

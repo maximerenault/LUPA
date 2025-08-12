@@ -1,7 +1,8 @@
 from bisect import bisect_left
 from tkinter import Event
 import numpy as np
-from exceptions.elementsexceptions import BadValueTypeError
+from exceptions.calculatorexceptions import CalculatorException
+from utils.calculator import calculator as calc
 from elements.node import Node
 from typing import TYPE_CHECKING
 
@@ -247,17 +248,29 @@ class Wire:
     def __repr__(self) -> str:
         return str(self)
 
-    def set_value(self, value: float | str | None) -> None:
-        if not self.active and not (isinstance(value, float) or value is None):
-            try:
-                value = float(value)
-            except (ValueError, TypeError):
-                raise BadValueTypeError(type(value), float)
-        if self.active and not (isinstance(value, str) or value is None):
-            raise BadValueTypeError(type(value), str)
+    def set_value(self, value: float | str | None) -> int:
+        if value is None:
+            self.value = None
+            self.active = False
+            return 0
+        try:  # try value as a float
+            value = float(value)
+            self.active = False
+        except (ValueError, TypeError):
+            try:  # try value as an expression
+                _, vars = calc.calculate(value, True)
+                if vars:
+                    self.active = True
+                else:
+                    self.active = False
+            except CalculatorException:
+                self.value = value
+                self.active = False
+                return 1
         self.value = value
         # source = sp.interpolate.CubicSpline(x, y, extrapolate="periodic")
         # self.source = source
+        return 0
 
     def get_value(self) -> float | str | None:
         return self.value

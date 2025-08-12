@@ -1,0 +1,443 @@
+{
+    "elements": [
+        {
+            "type": "Capacitor",
+            "name": "Clv",
+            "nodes": [
+                0,
+                1
+            ],
+            "pressure_listeners": [
+                true,
+                false
+            ],
+            "pressure_listener_names": [
+                "Plv",
+                ""
+            ],
+            "flow_listener": -1,
+            "flow_listener_name": "Q0",
+            "active": true,
+            "value": "1/E"
+        },
+        {
+            "type": "Ground",
+            "name": "",
+            "nodes": [
+                1,
+                3
+            ],
+            "pressure_listeners": [
+                false,
+                false
+            ],
+            "pressure_listener_names": [
+                "",
+                ""
+            ],
+            "flow_listener": 0,
+            "flow_listener_name": "",
+            "active": false,
+            "value": null
+        },
+        {
+            "type": "Diode",
+            "name": "",
+            "nodes": [
+                4,
+                0
+            ],
+            "pressure_listeners": [
+                false,
+                false
+            ],
+            "pressure_listener_names": [
+                "",
+                ""
+            ],
+            "flow_listener": 0,
+            "flow_listener_name": "",
+            "active": false,
+            "value": null
+        },
+        {
+            "type": "Resistor",
+            "name": "Rva",
+            "nodes": [
+                0,
+                7
+            ],
+            "pressure_listeners": [
+                false,
+                false
+            ],
+            "pressure_listener_names": [
+                "",
+                ""
+            ],
+            "flow_listener": 0,
+            "flow_listener_name": "",
+            "active": false,
+            "value": 10.0
+        },
+        {
+            "type": "Inductor",
+            "name": "Lva",
+            "nodes": [
+                7,
+                9
+            ],
+            "pressure_listeners": [
+                false,
+                false
+            ],
+            "pressure_listener_names": [
+                "",
+                ""
+            ],
+            "flow_listener": 1,
+            "flow_listener_name": "Qao",
+            "active": false,
+            "value": 0.69
+        },
+        {
+            "type": "Diode",
+            "name": "",
+            "nodes": [
+                9,
+                11
+            ],
+            "pressure_listeners": [
+                false,
+                false
+            ],
+            "pressure_listener_names": [
+                "",
+                ""
+            ],
+            "flow_listener": 0,
+            "flow_listener_name": "",
+            "active": false,
+            "value": null
+        },
+        {
+            "type": "Inductor",
+            "name": "Lav",
+            "nodes": [
+                4,
+                13
+            ],
+            "pressure_listeners": [
+                false,
+                false
+            ],
+            "pressure_listener_names": [
+                "",
+                ""
+            ],
+            "flow_listener": -1,
+            "flow_listener_name": "Qla",
+            "active": false,
+            "value": 0.67
+        },
+        {
+            "type": "Resistor",
+            "name": "Rav",
+            "nodes": [
+                13,
+                15
+            ],
+            "pressure_listeners": [
+                false,
+                false
+            ],
+            "pressure_listener_names": [
+                "",
+                ""
+            ],
+            "flow_listener": 0,
+            "flow_listener_name": "",
+            "active": false,
+            "value": 10.0
+        },
+        {
+            "type": "PSource",
+            "name": "P",
+            "nodes": [
+                15,
+                17
+            ],
+            "pressure_listeners": [
+                false,
+                false
+            ],
+            "pressure_listener_names": [
+                "",
+                ""
+            ],
+            "flow_listener": 0,
+            "flow_listener_name": "",
+            "active": false,
+            "value": 18660.0
+        },
+        {
+            "type": "Resistor",
+            "name": "Rp",
+            "nodes": [
+                11,
+                19
+            ],
+            "pressure_listeners": [
+                true,
+                false
+            ],
+            "pressure_listener_names": [
+                "Pao",
+                ""
+            ],
+            "flow_listener": 0,
+            "flow_listener_name": "",
+            "active": false,
+            "value": 60.0
+        },
+        {
+            "type": "Resistor",
+            "name": "Rd",
+            "nodes": [
+                20,
+                21
+            ],
+            "pressure_listeners": [
+                false,
+                false
+            ],
+            "pressure_listener_names": [
+                "",
+                ""
+            ],
+            "flow_listener": 0,
+            "flow_listener_name": "",
+            "active": false,
+            "value": 1300.0
+        },
+        {
+            "type": "Capacitor",
+            "name": "C",
+            "nodes": [
+                19,
+                23
+            ],
+            "pressure_listeners": [
+                false,
+                false
+            ],
+            "pressure_listener_names": [
+                "",
+                ""
+            ],
+            "flow_listener": 0,
+            "flow_listener_name": "",
+            "active": false,
+            "value": 0.0005
+        },
+        {
+            "type": "Wire",
+            "name": "",
+            "nodes": [
+                19,
+                20
+            ],
+            "pressure_listeners": [
+                false,
+                false
+            ],
+            "pressure_listener_names": [
+                "",
+                ""
+            ],
+            "flow_listener": 0,
+            "flow_listener_name": "",
+            "active": false,
+            "value": null
+        },
+        {
+            "type": "Ground",
+            "name": "",
+            "nodes": [
+                23,
+                27
+            ],
+            "pressure_listeners": [
+                false,
+                false
+            ],
+            "pressure_listener_names": [
+                "",
+                ""
+            ],
+            "flow_listener": 0,
+            "flow_listener_name": "",
+            "active": false,
+            "value": null
+        },
+        {
+            "type": "Ground",
+            "name": "",
+            "nodes": [
+                21,
+                29
+            ],
+            "pressure_listeners": [
+                false,
+                false
+            ],
+            "pressure_listener_names": [
+                "",
+                ""
+            ],
+            "flow_listener": 0,
+            "flow_listener_name": "",
+            "active": false,
+            "value": null
+        }
+    ],
+    "constants": {
+        "e": "2.718281828459045",
+        "pi": "3.141592653589793",
+        "Emin": "0.18",
+        "Emax": "2.0",
+        "Ttot": "0.8",
+        "T1": "0.286",
+        "T2": "0.46"
+    },
+    "variables": {
+        "t": "t",
+        "tmod": "t%Ttot",
+        "En1": "1/2*(1+cos(pi*(tmod-T1)/(T2-T1)))",
+        "En2": "1/2*(1-cos(pi*tmod/T1))",
+        "En": "(tmod<=T2)*(tmod>=T1)*En1+(tmod<T1)*En2",
+        "E": "1333*(Emin+(Emax-Emin)*En)"
+    },
+    "nodes": [
+        [
+            0.0,
+            0.0
+        ],
+        [
+            0.0,
+            -1.0
+        ],
+        [
+            0.0,
+            -1.0
+        ],
+        [
+            0.0,
+            -1.75
+        ],
+        [
+            -1.0,
+            0.0
+        ],
+        [
+            0.0,
+            0.0
+        ],
+        [
+            0.0,
+            0.0
+        ],
+        [
+            1.0,
+            0.0
+        ],
+        [
+            1.0,
+            0.0
+        ],
+        [
+            2.0,
+            0.0
+        ],
+        [
+            2.0,
+            0.0
+        ],
+        [
+            3.0,
+            0.0
+        ],
+        [
+            -1.0,
+            0.0
+        ],
+        [
+            -2.0,
+            0.0
+        ],
+        [
+            -2.0,
+            0.0
+        ],
+        [
+            -3.0,
+            0.0
+        ],
+        [
+            -3.0,
+            0.0
+        ],
+        [
+            -3.75,
+            0.0
+        ],
+        [
+            3.0,
+            0.0
+        ],
+        [
+            4.0,
+            0.0
+        ],
+        [
+            5.0,
+            0.0
+        ],
+        [
+            5.0,
+            -1.0
+        ],
+        [
+            4.0,
+            0.0
+        ],
+        [
+            4.0,
+            -1.0
+        ],
+        [
+            4.0,
+            0.0
+        ],
+        [
+            5.0,
+            0.0
+        ],
+        [
+            4.0,
+            -1.0
+        ],
+        [
+            4.0,
+            -1.75
+        ],
+        [
+            5.0,
+            -1.0
+        ],
+        [
+            5.0,
+            -1.75
+        ]
+    ]
+}

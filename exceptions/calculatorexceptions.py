@@ -14,6 +14,11 @@ class BadFunctionError(CalculatorException):
         )
 
 
+class BadConstantError(CalculatorException):
+    def __init__(self, const: str, vars: list) -> None:
+        super().__init__(f"bad constant {const}, depends on variables: {vars}")
+
+
 class UnexpectedCharacterError(CalculatorException):
     def __init__(self, char: str, expected: list = None) -> None:
         if expected:

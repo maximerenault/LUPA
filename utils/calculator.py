@@ -57,7 +57,6 @@ from typing import (
     List,
     Dict,
     Any,
-    Union,
     Callable,
 )
 import numpy as np
@@ -66,6 +65,7 @@ from exceptions.calculatorexceptions import (
     UnexpectedCharacterError,
     BadNumberError,
     BadFunctionError,
+    BadConstantError,
     WrongArgsLenError,
     UnexpectedEndError,
     ReadOnlyError,
@@ -226,7 +226,7 @@ class Calculator:
 
     def __init__(
         self,
-        custom_constants: Dict[str, float] = None,
+        custom_constants: Dict[str, float | str] = None,
         custom_variables: Dict[str, str] = None,
         custom_functions: Dict[str, Callable[[float], float]] = None,
     ):
@@ -298,20 +298,16 @@ class Calculator:
             self.functions[name] = func
         self._update_tokens()
 
-    def set_constant(self, name: str, value: Union[int, float]):
+    def set_constant(self, name: str, value: int | float | str):
         """Create or update a constant. Protected constants are read-only
         (cannot be changed)."""
         if name in self._protected_constants:
             # Allow no-op set to same value, but block changes
             current = self.constants.get(name)
-            if current is None or float(value) != float(current):
+            if current is None or value != current:
                 raise ReadOnlyError(name)
             return
-        try:
-            num_val = float(value)
-        except (TypeError, ValueError):
-            raise ValueError(f"Constant '{name}' must be a number.")
-        self.constants[name] = num_val
+        self.constants[name] = value
         self._update_tokens()
 
     def set_variable(self, name: str, expr: str):
@@ -345,10 +341,6 @@ class Calculator:
         """Load multiple constants into the calculator."""
         self.clear_constants()
         for name, value in constants.items():
-            try:
-                value = float(value)
-            except (TypeError, ValueError):
-                raise ValueError(f"Constant '{name}' must be a number.")
             try:
                 self.set_constant(name, value)
             except ReadOnlyError:
@@ -589,8 +581,7 @@ class Parser(BaseParser):
         >>> Parser([1])._parse_factor()
         1
 
-        >>> Parser(['(', 1, '+', 2, '*', 'abs',\
-            '(', '-', 3, ')', ')'])._parse_factor()
+        >>> Parser(['(', 1, '+', 2, '*', 'abs', '(', '-', 3, ')', ')'])._parse_factor()
         7
         """
         for value in self._take(lambda t: isinstance(t, float)):
@@ -612,11 +603,14 @@ class Parser(BaseParser):
             return lambda *args: (value(*args) if sign == "+" else -value(*args))
 
         for cons in self._take(lambda t: t in self.calc.constants):
-            value = self.calc.constants[cons]
-            assert isinstance(
-                value, (int, float)
-            ), f"Invalid constant {cons}: {value}, type: {type(value)}"
-            return lambda *args: value
+            expr = self.calc.constants[cons]
+            if isinstance(expr, (int, float)):
+                return lambda *args: expr
+            scan = Scanner(expr, self.calc).scan()
+            value, vars = Parser(scan, self.calc).parse()
+            if vars:
+                raise BadConstantError(cons, vars)
+            return lambda *args: value()
 
         for func in self._take(lambda t: t in self.calc.functions):
             self._expect("(")
@@ -661,3 +655,26 @@ def calculate(expression: str, return_vars: bool = False):
     9.0
     """
     return calculator.calculate(expression, return_vars)
+
+
+def deriv_finite_diff(
+    func: Callable[[float], float], h: float = 1e-8
+) -> Callable[[float], float]:
+    """Calculates the derivative of a function using finite difference method.
+
+    Args:
+        func (Callable[[float], float]): Function to differentiate
+        h (float): Step size for finite difference
+    Returns:
+        Callable[[float], float]: Function that returns the derivative at a point
+
+    >>> f = lambda x: x**2
+    >>> df = deriv_finite_diff(f)
+    >>> df(2)
+    4.000000000004
+    """
+
+    def derivative(x: float) -> float:
+        return (func(x + h) - func(x - h)) / (2 * h)
+
+    return derivative

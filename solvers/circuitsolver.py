@@ -10,7 +10,7 @@ from elements.resistor import Resistor
 from solvers.graphedge import GraphEdge
 from solvers.graphnode import GraphNode
 import matplotlib.pyplot as plt
-import utils.calculator as calc
+from utils.calculator import calculator as calc, deriv_finite_diff as deriv
 import copy
 
 
@@ -127,7 +127,10 @@ class CircuitSolver:
         self.Source = np.zeros((nbP + nbQ), dtype=float)
         self.solution = np.zeros((nbP + nbQ, nb_step + 1))
 
-        self.update_diode_dict = self.build_M0M1(nbP, paths, startends)
+        self.update_diode_dict, self.update_M0_dict, self.update_M1_dict = (
+            self.build_M0M1(nbP, paths, startends)
+        )
+        self.update_M0M1(time)
         self.update_source_dict = self.build_source(paths)
         self.update_source(time)
 
@@ -138,12 +141,15 @@ class CircuitSolver:
         try:
             self.solution[:, :] = np.linalg.solve(self.M0, self.Source).reshape(-1, 1)
         except np.linalg.LinAlgError:
-            return 2
+            self.solution[:, :] = 0
         self.build_LHS()
 
         while step < nb_step:
             time += self.dt
             self.update_source(time)
+            if self.update_M0_dict != {} or self.update_M1_dict != {}:
+                self.update_M0M1(time)
+                self.build_LHS()
             self.build_RHS(step)
             self.solution[:, step + 1] = np.linalg.solve(self.LHS, self.RHS)
             if self.update_diode(step):
@@ -181,7 +187,7 @@ class CircuitSolver:
 
     def build_M0M1(
         self, nbP: int, paths: list[list[GraphEdge]], startends: list[list[int]]
-    ) -> None:
+    ) -> tuple[dict, dict, dict]:
         """
         Build matrices for zero and first order derivatives
         of the unknown vector.
@@ -189,6 +195,8 @@ class CircuitSolver:
         M1 = self.M1
         M0 = self.M0
         update_diode_dict = {}
+        update_M0_dict = {}
+        update_M1_dict = {}
         line = 0
         idQ = nbP
         for i, path in enumerate(paths):
@@ -200,36 +208,66 @@ class CircuitSolver:
                 else:
                     idP1 = edge.start
                 if type(edge.elem) is Resistor:
+                    # P = R * Q
+                    if edge.elem.active:
+                        update_M0_dict[line] = {
+                            idQ: calc.calculate("-(" + edge.elem.get_value() + ")")
+                        }
+                    else:
+                        M0[line, idQ] = -edge.elem.get_value()
                     M0[line, idP1] = -1
                     M0[line, idP0] = 1
-                    M0[line, idQ] = -edge.elem.get_value()
                 elif type(edge.elem) is Capacitor:
-                    M1[line, idP1] = -edge.elem.get_value()
-                    M1[line, idP0] = edge.elem.get_value()
+                    # Q = C * d(P0 - P1)/dt + dC/dt * (P0 - P1)
+                    if edge.elem.active:
+                        update_M0_dict[line] = {
+                            idP1: deriv(
+                                calc.calculate("-(" + edge.elem.get_value() + ")")
+                            ),
+                            idP0: deriv(calc.calculate(edge.elem.get_value())),
+                        }
+                        update_M1_dict[line] = {
+                            idP1: calc.calculate("-(" + edge.elem.get_value() + ")"),
+                            idP0: calc.calculate(edge.elem.get_value()),
+                        }
+                    else:
+                        M1[line, idP1] = -edge.elem.get_value()
+                        M1[line, idP0] = edge.elem.get_value()
                     M0[line, idQ] = -1
                 elif type(edge.elem) is Inductor:
+                    # P = L * dQ/dt + dL/dt * Q
+                    if edge.elem.active:
+                        update_M0_dict[line] = {
+                            idQ: deriv(
+                                calc.calculate("-(" + edge.elem.get_value() + ")")
+                            )
+                        }
+                        update_M1_dict[line] = {
+                            idQ: calc.calculate("-(" + edge.elem.get_value() + ")"),
+                        }
+                    else:
+                        M1[line, idQ] = -edge.elem.get_value()
                     M0[line, idP1] = -1
                     M0[line, idP0] = 1
-                    M1[line, idQ] = -edge.elem.get_value()
                 elif type(edge.elem) is Diode:
                     M0[line, idP1] = -1
                     M0[line, idP0] = 1
                     if idP0 == edge.start:
                         update_diode_dict[line] = [
-                            True,
+                            True,  # True = Open
                             idP0,
                             idP1,
                             idQ,
-                            1,
-                        ]  # True = Open, 1 -> Q
+                            1,  # 1 -> Q
+                        ]
                     else:
                         update_diode_dict[line] = [
-                            True,
+                            True,  # True = Open
                             idP0,
                             idP1,
                             idQ,
-                            -1,
-                        ]  # True = Open, -1 -> -Q
+                            -1,  # -1 -> -Q
+                        ]
                 elif type(edge.elem) is Ground or type(edge.elem) is PSource:
                     idP1 = edge.start
                     M0[line, idP1] = 1
@@ -256,7 +294,7 @@ class CircuitSolver:
                         M0[line, idQ] = 1
                     idQ += 1
                 line += 1
-        return update_diode_dict
+        return update_diode_dict, update_M0_dict, update_M1_dict
 
     def update_M0M1(self, time: float) -> None:
         """
@@ -264,7 +302,11 @@ class CircuitSolver:
         in update_M0_dict and update_M1_dict.
         """
         for line in self.update_M0_dict.keys():
-            self.Source[line] = self.update_M0_dict[line](time)
+            for col in self.update_M0_dict[line].keys():
+                self.M0[line, col] = self.update_M0_dict[line][col](time)
+        for line in self.update_M1_dict.keys():
+            for col in self.update_M1_dict[line].keys():
+                self.M1[line, col] = self.update_M1_dict[line][col](time)
 
     def set_diode(self, line: int, diode_open: bool, resistor: bool = False) -> None:
         """Sets the state of a diode to diode_open.
@@ -354,10 +396,13 @@ class CircuitSolver:
         """
         update_source_dict = {}
         line = 0
-        for i, path in enumerate(paths):
+        for path in paths:
             for edge in path:
                 if type(edge.elem) is PSource or type(edge.elem) is QSource:
-                    update_source_dict[line] = calc.calculate(edge.elem.get_value())
+                    if edge.elem.active:
+                        update_source_dict[line] = calc.calculate(edge.elem.get_value())
+                    else:
+                        self.Source[line] = edge.elem.get_value()
                 line += 1
         return update_source_dict
 
