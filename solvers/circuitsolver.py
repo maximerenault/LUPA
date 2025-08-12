@@ -546,3 +546,19 @@ class CircuitSolver:
                     listened[len(nodes) + i] = edge.elem.listener_name
                 idP0 = idP1
         return listened, signs
+
+    def save_to_csv(self, filename: str) -> None:
+        """
+        Save the circuit solver's listened solution to a CSV file.
+        """
+        with open(filename, "w") as f:
+            f.write("Time," + ",".join(self.listened.values()) + "\n")
+            for i in range(self.solution.shape[1]):
+                f.write(
+                    str(i * self.dt)
+                    + ","
+                    + ",".join(
+                        [str(self.solution[key, i]) for key in self.listened.keys()]
+                    )
+                    + "\n"
+                )

@@ -78,6 +78,15 @@ class FrameSolve(ttk.Frame):
                             "sticky": "ew",
                         },
                     },
+                    "SaveCSV": {
+                        "type": "button",
+                        "grid": {
+                            "row": 6,
+                            "column": 0,
+                            "columnspan": 2,
+                            "sticky": "ew",
+                        },
+                    },
                 },
                 "rowcol_weights": {
                     "rows": [],
@@ -120,6 +129,7 @@ class FrameSolve(ttk.Frame):
         self.button_options = {
             "Solve": {"text": "Solve", "bindfunc": self.solve},
             "ExportMat": {"text": "Export matrices", "bindfunc": self.export_matrices},
+            "SaveCSV": {"text": "Save to CSV", "bindfunc": self.save_csv},
         }
 
         self.widget_frame = FrameBase(self, {})
@@ -178,6 +188,18 @@ class FrameSolve(ttk.Frame):
             tk.messagebox.showerror("Error", "The problem is over constrained.")
             return
         return
+
+    def save_csv(self) -> None:
+        """
+        Save the results to a CSV file.
+        """
+        main_window = self.master.master
+        filename = main_window.filename.split(".")[0] + ".csv"
+        try:
+            self.csolver.save_to_csv(filename)
+            tk.messagebox.showinfo("Success", f"Results saved to {filename}")
+        except Exception as e:
+            tk.messagebox.showerror("Error", "Failed to save results. " + str(e))
 
     def export_matrices(self) -> None:
         return
