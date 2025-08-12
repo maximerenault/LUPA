@@ -25,12 +25,12 @@ except Exception:
 class MainWindow(tk.Tk):
 
     ICON_PATHS = [
-        "icons/LUPA_16.png",
-        "icons/LUPA_32.png",
-        "icons/LUPA_48.png",
-        "icons/LUPA_64.png",
-        "icons/LUPA_128.png",
-        "icons/LUPA_256.png",
+        "img/icons/LUPA_16.png",
+        "img/icons/LUPA_32.png",
+        "img/icons/LUPA_48.png",
+        "img/icons/LUPA_64.png",
+        "img/icons/LUPA_128.png",
+        "img/icons/LUPA_256.png",
     ]
     RECENT_FILES_BASENAME = "recent_files.log"
     MAX_RECENT_FILES = 10

@@ -1,7 +1,7 @@
 # LUPA – Lumped Parameter Analysis
 
 <div align="center">
-  <img src="icons/LUPA_256.png" alt="LUPA Logo" width="128" height="128">
+  <img src="img/icons/LUPA_256.png" alt="LUPA Logo" width="128" height="128">
   
   [![Python](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
   [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
@@ -97,6 +97,9 @@ lupa path/to/circuit.json
 3. **Set Parameters**: Configure component values and simulation settings
 4. **Solve**: Run the simulation to analyze your circuit
 5. **View Results**: Examine the output plots and data
+<div align="center">
+  <img src="img/lumped_lv_windkessel.jpg" alt="Results of the analysis of a left ventricle model">
+</div>
 
 ## Project Structure
 
