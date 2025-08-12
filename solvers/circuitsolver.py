@@ -10,7 +10,7 @@ from elements.resistor import Resistor
 from solvers.graphedge import GraphEdge
 from solvers.graphnode import GraphNode
 import matplotlib.pyplot as plt
-from utils.calculator import calculator as calc, deriv_finite_diff as deriv
+from utils.calculator import calculate as calc, deriv_finite_diff as deriv
 import copy
 
 
@@ -27,8 +27,8 @@ class CircuitSolver:
         self.maxtime = 10.0
         self.solution = None
         # Backwards Differentiation Formula
-        self.time_integrations = ["BDF", "BDF2"]
-        self.time_integration = self.time_integrations[0]
+        self.time_integrations = ["BDF", "BDF2", "BDF3"]
+        self.time_integration = self.time_integrations[1]
         self.update_source_dict = {}
         self.update_M0_dict = {}
         self.update_M1_dict = {}
@@ -211,7 +211,7 @@ class CircuitSolver:
                     # P = R * Q
                     if edge.elem.active:
                         update_M0_dict[line] = {
-                            idQ: calc.calculate("-(" + edge.elem.get_value() + ")")
+                            idQ: calc("-(" + edge.elem.get_value() + ")")
                         }
                     else:
                         M0[line, idQ] = -edge.elem.get_value()
@@ -221,14 +221,12 @@ class CircuitSolver:
                     # Q = C * d(P0 - P1)/dt + dC/dt * (P0 - P1)
                     if edge.elem.active:
                         update_M0_dict[line] = {
-                            idP1: deriv(
-                                calc.calculate("-(" + edge.elem.get_value() + ")")
-                            ),
-                            idP0: deriv(calc.calculate(edge.elem.get_value())),
+                            idP1: deriv(calc("-(" + edge.elem.get_value() + ")")),
+                            idP0: deriv(calc(edge.elem.get_value())),
                         }
                         update_M1_dict[line] = {
-                            idP1: calc.calculate("-(" + edge.elem.get_value() + ")"),
-                            idP0: calc.calculate(edge.elem.get_value()),
+                            idP1: calc("-(" + edge.elem.get_value() + ")"),
+                            idP0: calc(edge.elem.get_value()),
                         }
                     else:
                         M1[line, idP1] = -edge.elem.get_value()
@@ -238,12 +236,10 @@ class CircuitSolver:
                     # P = L * dQ/dt + dL/dt * Q
                     if edge.elem.active:
                         update_M0_dict[line] = {
-                            idQ: deriv(
-                                calc.calculate("-(" + edge.elem.get_value() + ")")
-                            )
+                            idQ: deriv(calc("-(" + edge.elem.get_value() + ")"))
                         }
                         update_M1_dict[line] = {
-                            idQ: calc.calculate("-(" + edge.elem.get_value() + ")"),
+                            idQ: calc("-(" + edge.elem.get_value() + ")"),
                         }
                     else:
                         M1[line, idQ] = -edge.elem.get_value()
@@ -277,6 +273,10 @@ class CircuitSolver:
                     else:
                         M0[line, idQ] = 1
                     idP1 = edge.start
+                else:
+                    raise TypeError(
+                        f"Unknown element type: {type(edge.elem)} in edge {edge}"
+                    )
                 idP0 = idP1
                 line += 1
             idQ += 1
@@ -400,7 +400,7 @@ class CircuitSolver:
             for edge in path:
                 if type(edge.elem) is PSource or type(edge.elem) is QSource:
                     if edge.elem.active:
-                        update_source_dict[line] = calc.calculate(edge.elem.get_value())
+                        update_source_dict[line] = calc(edge.elem.get_value())
                     else:
                         self.Source[line] = edge.elem.get_value()
                 line += 1
@@ -423,6 +423,8 @@ class CircuitSolver:
             self.LHS = self.M0 + self.M1 / self.dt
         elif self.time_integration == "BDF2":
             self.LHS = self.M0 + 3 * self.M1 / (2 * self.dt)
+        elif self.time_integration == "BDF3":
+            self.LHS = self.M0 + 11 * self.M1 / (6 * self.dt)
         return
 
     def build_RHS(self, step: int) -> None:
@@ -439,6 +441,16 @@ class CircuitSolver:
                 self.M1,
                 (4 * self.solution[:, step] - self.solution[:, step - 1])
                 / (2 * self.dt),
+            )
+        elif self.time_integration == "BDF3":
+            self.RHS = self.Source + np.matmul(
+                self.M1,
+                (
+                    18 * self.solution[:, step]
+                    - 9 * self.solution[:, step - 1]
+                    + 2 * self.solution[:, step - 2]
+                )
+                / (6 * self.dt),
             )
         return
 

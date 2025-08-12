@@ -139,7 +139,7 @@ class FrameBase(ttk.Frame):
             self, values=options.get("values", []), state="readonly"
         )
         combobox.grid(**grid_options)
-        combobox.current(0)
+        combobox.current(options.get("current", 0))
         combobox.bind("<<ComboboxSelected>>", options.get("bindfunc", lambda _: None))
         self.combobox[key] = combobox
 

@@ -119,6 +119,9 @@ class FrameSolve(ttk.Frame):
             "time integration": {
                 "values": self.csolver.time_integrations,
                 "bindfunc": self.update_time_integration,
+                "current": self.csolver.time_integrations.index(
+                    self.csolver.time_integration
+                ),
             },
         }
 
