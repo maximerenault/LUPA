@@ -1,9 +1,9 @@
 from tkinter import ttk, END, Event
-from utils.calculator import calculator
+from lupa.utils.calculator import calculator
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from GUI.drawingboard import DrawingBoard
+    from lupa.GUI.drawingboard import DrawingBoard
 
 
 class FrameVariables(ttk.Frame):

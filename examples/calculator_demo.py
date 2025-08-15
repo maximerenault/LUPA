@@ -6,13 +6,13 @@ and complex mathematical expressions for circuit analysis.
 
 import numpy as np
 import matplotlib.pyplot as plt
-from utils.calculator import Calculator
+from lupa.utils.calculator import Calculator
 
 
 def demo_basic_calculator():
     """Demonstrate basic calculator functionality."""
     print("=== Basic Calculator Demo ===")
-    from utils.calculator import calculate  # Using global calculator
+    from lupa.utils.calculator import calculate  # Using global calculator
 
     # Basic operations
     expressions = [

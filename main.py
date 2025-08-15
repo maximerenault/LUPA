@@ -1,5 +1,5 @@
 import tkinter as tk
-from GUI.drawingboard import DrawingBoard
+from lupa.GUI.drawingboard import DrawingBoard
 import os
 import sys
 import argparse

@@ -1,24 +1,24 @@
-from GUI.framebase import FrameBase
-from utils.io import readvalues
+from lupa.GUI.framebase import FrameBase
+from lupa.utils.io import readvalues
 import numpy as np
 from tkinter import ttk
 import tkinter as tk
-from elements.wire import Wire
-from elements.resistor import Resistor
-from elements.capacitor import Capacitor
-from elements.inductor import Inductor
-from elements.ground import Ground
-from elements.psource import PSource
-from elements.diode import Diode
-from exceptions.attibutesexceptions import BadNumberError
-from exceptions.calculatorexceptions import CalculatorException
-from utils.strings import check_strint
+from lupa.elements.wire import Wire
+from lupa.elements.resistor import Resistor
+from lupa.elements.capacitor import Capacitor
+from lupa.elements.inductor import Inductor
+from lupa.elements.ground import Ground
+from lupa.elements.psource import PSource
+from lupa.elements.diode import Diode
+from lupa.exceptions.attibutesexceptions import BadNumberError
+from lupa.exceptions.calculatorexceptions import CalculatorException
+from lupa.utils.strings import check_strint
 import matplotlib
-import utils.calculator as calc
+import lupa.utils.calculator as calc
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from GUI.drawingboard import DrawingBoard
+    from lupa.GUI.drawingboard import DrawingBoard
 
 matplotlib.use("TkAgg")
 

@@ -1,16 +1,16 @@
 from typing import Generator
 import numpy as np
-from elements.capacitor import Capacitor
-from elements.diode import Diode
-from elements.ground import Ground
-from elements.inductor import Inductor
-from elements.psource import PSource
-from elements.qsource import QSource
-from elements.resistor import Resistor
-from solvers.graphedge import GraphEdge
-from solvers.graphnode import GraphNode
+from lupa.elements.capacitor import Capacitor
+from lupa.elements.diode import Diode
+from lupa.elements.ground import Ground
+from lupa.elements.inductor import Inductor
+from lupa.elements.psource import PSource
+from lupa.elements.qsource import QSource
+from lupa.elements.resistor import Resistor
+from lupa.solvers.graphedge import GraphEdge
+from lupa.solvers.graphnode import GraphNode
 import matplotlib.pyplot as plt
-from utils.calculator import calculate as calc, deriv_finite_diff as deriv
+from lupa.utils.calculator import calculate as calc, deriv_finite_diff as deriv
 import copy
 
 
@@ -309,11 +309,14 @@ class CircuitSolver:
                 self.M1[line, col] = self.update_M1_dict[line][col](time)
 
     def set_diode(self, line: int, diode_open: bool, resistor: bool = False) -> None:
-        """Sets the state of a diode to diode_open.
+        """Sets the state of a diode to diode_open. Replaces it with a resistor if
+        resistor is True.
 
         Args:
             line (int): Line of matrix to which the diode is linked
             diode_open (bool): State of the diode wanted
+            resistor (bool, optional): Whether to replace the diode with a resistor.
+                Defaults to False.
         """
         _, idP0, idP1, idQ, _ = self.update_diode_dict[line]
         self.update_diode_dict[line][0] = diode_open
@@ -344,15 +347,14 @@ class CircuitSolver:
         for line in self.update_diode_dict.keys():
             diode_open, idP0, idP1, idQ, signQ = self.update_diode_dict[line]
             if diode_open:
-                if signQ * self.solution[idQ, step + 1] < 0:
+                Q = self.solution[idQ, step + 1]
+                if signQ * Q < 0:
                     self.set_diode(line, diode_open=False)
                     recompute = True
             else:
-                if (
-                    signQ
-                    * (self.solution[idP0, step + 1] - self.solution[idP1, step + 1])
-                    > 0
-                ):
+                P0 = self.solution[idP0, step + 1]
+                P1 = self.solution[idP1, step + 1]
+                if signQ * (P0 - P1) > 0:
                     self.set_diode(line, diode_open=True)
                     recompute = True
         return recompute
@@ -418,20 +420,22 @@ class CircuitSolver:
         """
         Build left hand side of the equation.
         """
-        self.LHS = np.zeros_like(self.M0)
         if self.time_integration == "BDF":
             self.LHS = self.M0 + self.M1 / self.dt
         elif self.time_integration == "BDF2":
             self.LHS = self.M0 + 3 * self.M1 / (2 * self.dt)
         elif self.time_integration == "BDF3":
             self.LHS = self.M0 + 11 * self.M1 / (6 * self.dt)
+        else:
+            raise ValueError(
+                f"Unknown time integration method: {self.time_integration}"
+            )
         return
 
     def build_RHS(self, step: int) -> None:
         """
         Build right hand side of the equation.
         """
-        self.RHS = np.zeros_like(self.Source)
         if self.time_integration == "BDF":
             self.RHS = self.Source + np.matmul(
                 self.M1, self.solution[:, step] / self.dt
@@ -451,6 +455,10 @@ class CircuitSolver:
                     + 2 * self.solution[:, step - 2]
                 )
                 / (6 * self.dt),
+            )
+        else:
+            raise ValueError(
+                f"Unknown time integration method: {self.time_integration}"
             )
         return
 

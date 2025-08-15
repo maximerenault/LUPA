@@ -1,13 +1,13 @@
 from bisect import bisect_left
 from tkinter import Event
 import numpy as np
-from exceptions.calculatorexceptions import CalculatorException
-from utils.calculator import calculator as calc
-from elements.node import Node
+from lupa.exceptions.calculatorexceptions import CalculatorException
+from lupa.utils.calculator import calculator as calc
+from lupa.elements.node import Node
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from GUI.drawingboard import DrawingBoard
+    from lupa.GUI.drawingboard import DrawingBoard
 
 
 class Wire:

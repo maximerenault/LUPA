@@ -1,15 +1,15 @@
-from GUI.framebase import FrameBase
+from lupa.GUI.framebase import FrameBase
 from tkinter import ttk
 import tkinter as tk
 import matplotlib
-from exceptions.solveframeexceptions import BadNumberError
-from solvers.circuitgraph import CircuitGraph
-from solvers.circuitsolver import CircuitSolver
-from utils.strings import check_strfloat_pos
+from lupa.exceptions.solveframeexceptions import BadNumberError
+from lupa.solvers.circuitgraph import CircuitGraph
+from lupa.solvers.circuitsolver import CircuitSolver
+from lupa.utils.strings import check_strfloat_pos
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from GUI.drawingboard import DrawingBoard
+    from lupa.GUI.drawingboard import DrawingBoard
 
 matplotlib.use("TkAgg")
 

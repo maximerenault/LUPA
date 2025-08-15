@@ -1,5 +1,5 @@
 import unittest
-from utils.strings import check_strint, check_strfloat, check_strfloat_pos
+from lupa.utils.strings import check_strint, check_strfloat, check_strfloat_pos
 
 
 class TestStringUtils(unittest.TestCase):

@@ -1,10 +1,10 @@
 import numpy as np
-from elements.ground import Ground
-from elements.node import Node
+from lupa.elements.ground import Ground
+from lupa.elements.node import Node
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from GUI.drawingboard import DrawingBoard
+    from lupa.GUI.drawingboard import DrawingBoard
 
 
 class PSource(Ground):

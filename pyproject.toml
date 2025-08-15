@@ -7,22 +7,20 @@ name = "LUPA"
 version = "0.1.0"
 description = "A Lumped-Parameter Analysis tool for cardiovascular simulation and analysis"
 readme = "README.md"
-license = {file = "LICENSE"}
-authors = [
-    {name = "Maxime Renault", email = "maxime.renault@example.com"}
-]
+license = { file = "LICENSE" }
+authors = [{ name = "Maxime Renault", email = "maxime.renault@example.com" }]
 maintainers = [
-    {name = "Maxime Renault", email = "maxime.renault@example.com"}
+    { name = "Maxime Renault", email = "maxime.renault@example.com" },
 ]
 keywords = [
     "circuit-simulation",
-    "electrical-engineering", 
+    "electrical-engineering",
     "bioengineering",
     "cardiovascular-modeling",
     "lumped-parameter",
     "solver",
     "gui",
-    "tkinter"
+    "tkinter",
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -75,11 +73,11 @@ lupa = "main:main"
 lupa-gui = "main:main"
 
 [tool.setuptools]
-package-dir = {"" = "."}
+package-dir = { "" = "." }
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["elements*", "exceptions*", "GUI*", "solvers*", "utils*", "tests*"]
+include = ["lupa*"]
 exclude = ["deprecated*"]
 
 [tool.setuptools.package-data]

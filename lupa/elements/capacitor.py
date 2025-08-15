@@ -1,10 +1,10 @@
-from elements.wire import Wire
-from elements.node import Node
+from lupa.elements.wire import Wire
+from lupa.elements.node import Node
 import numpy as np
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from GUI.drawingboard import DrawingBoard
+    from lupa.GUI.drawingboard import DrawingBoard
 
 
 class Capacitor(Wire):

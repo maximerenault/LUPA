@@ -1,5 +1,5 @@
-from elements.psource import PSource
-from elements.node import Node
+from lupa.elements.psource import PSource
+from lupa.elements.node import Node
 
 
 class QSource(PSource):

@@ -7,7 +7,7 @@ import json
 import numpy as np
 import matplotlib.pyplot as plt
 import os
-from utils.calculator import Calculator
+from lupa.utils.calculator import Calculator
 
 
 def demo_parametric_circuit_analysis():

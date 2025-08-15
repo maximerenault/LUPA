@@ -3,8 +3,8 @@ from functools import total_ordering
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from GUI.drawingboard import DrawingBoard
-    from elements.wire import Wire
+    from lupa.GUI.drawingboard import DrawingBoard
+    from lupa.elements.wire import Wire
 
 
 @total_ordering

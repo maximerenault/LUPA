@@ -1,23 +1,22 @@
-from GUI.framelisteners import FrameListeners
-from GUI.framevariables import FrameVariables
-from GUI.gridzoom import GridZoom
-from GUI.frameattributes import FrameAttributes
-from GUI.framesolve import FrameSolve
-from elements.diode import Diode
-from elements.node import Node
-from elements.ground import Ground
-from elements.psource import PSource
-from elements.qsource import QSource
-from elements.wire import Wire
-from elements.resistor import Resistor
-from elements.capacitor import Capacitor
-from elements.inductor import Inductor
-from solvers.circuitgeom import CircuitGeom
-from utils.geometry import start_from_elem, elem_init_pos, intersect, distance
+from lupa.GUI.framelisteners import FrameListeners
+from lupa.GUI.framevariables import FrameVariables
+from lupa.GUI.gridzoom import GridZoom
+from lupa.GUI.frameattributes import FrameAttributes
+from lupa.GUI.framesolve import FrameSolve
+from lupa.elements.diode import Diode
+from lupa.elements.node import Node
+from lupa.elements.ground import Ground
+from lupa.elements.psource import PSource
+from lupa.elements.qsource import QSource
+from lupa.elements.wire import Wire
+from lupa.elements.resistor import Resistor
+from lupa.elements.capacitor import Capacitor
+from lupa.elements.inductor import Inductor
+from lupa.solvers.circuitgeom import CircuitGeom
+from lupa.utils.geometry import start_from_elem, elem_init_pos, intersect, distance
+from lupa.utils.io import loadfromjson, savetojson
 import tkinter as tk
 from tkinter import ttk
-
-from utils.io import loadfromjson, savetojson
 
 
 class DrawingBoard(GridZoom):

@@ -1,5 +1,5 @@
-from elements.node import Node
-from elements.wire import Wire
+from lupa.elements.node import Node
+from lupa.elements.wire import Wire
 
 
 class CircuitGeom:

@@ -5,7 +5,7 @@ Demonstrates loading and analyzing circuit JSON files with LUPA
 
 import json
 import os
-from utils.calculator import Calculator
+from lupa.utils.calculator import Calculator
 
 
 def load_circuit(filename):

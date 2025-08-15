@@ -1,4 +1,4 @@
-from elements.wire import Wire
+from lupa.elements.wire import Wire
 
 
 class GraphEdge:

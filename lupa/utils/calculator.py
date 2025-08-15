@@ -61,7 +61,7 @@ from typing import (
 )
 import numpy as np
 import operator as op
-from exceptions.calculatorexceptions import (
+from lupa.exceptions.calculatorexceptions import (
     UnexpectedCharacterError,
     BadNumberError,
     BadFunctionError,
