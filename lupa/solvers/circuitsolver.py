@@ -12,6 +12,7 @@ from lupa.solvers.graphnode import GraphNode
 import matplotlib.pyplot as plt
 from lupa.utils.calculator import calculate as calc, deriv_finite_diff as deriv
 import copy
+from tkinter import messagebox
 
 
 class CircuitSolver:
@@ -165,24 +166,7 @@ class CircuitSolver:
         for key in self.signs.keys():
             self.solution[key] *= self.signs[key]
 
-        _, axs = plt.subplots(2)
-        for key in self.probed.keys():
-            if key < nbP:
-                axs[0].plot(
-                    np.linspace(0, self.maxtime, nb_step + 1),
-                    self.solution[key],
-                    label=self.probed[key],
-                )
-            else:
-                axs[1].plot(
-                    np.linspace(0, self.maxtime, nb_step + 1),
-                    self.solution[key],
-                    label=self.probed[key],
-                )
-        axs[0].legend()
-        axs[1].legend()
-        plt.show()
-
+        self.plot_probes()
         return 0
 
     def build_M0M1(
@@ -566,6 +550,48 @@ class CircuitSolver:
                     probed[len(nodes) + i] = edge.elem.probe_name
                 idP0 = idP1
         return probed, signs
+
+    def plot_probes(self) -> None:
+        """
+        Plot the probes defined in the circuit.
+        """
+        if not self.probed:
+            messagebox.showinfo(
+                "Info",
+                "No probes defined, nothing to plot. "
+                "You can define probes in the Attributes panel.",
+            )
+            return
+
+        _, axs = plt.subplots(2)
+        with_p = False
+        with_q = False
+        for key in self.probed.keys():
+            if key < self.nbP:
+                axs[0].plot(
+                    np.linspace(0, self.maxtime, self.solution.shape[1]),
+                    self.solution[key],
+                    label=self.probed[key],
+                )
+                with_p = True
+            else:
+                axs[1].plot(
+                    np.linspace(0, self.maxtime, self.solution.shape[1]),
+                    self.solution[key],
+                    label=self.probed[key],
+                )
+                with_q = True
+        if with_p:
+            axs[0].set_xlabel("Time")
+            axs[0].set_ylabel("Pressure")
+            axs[0].legend()
+        if with_q:
+            axs[1].set_xlabel("Time")
+            axs[1].set_ylabel("Flow")
+            axs[1].legend()
+        plt.suptitle("Circuit Solver Probes")
+        plt.tight_layout()
+        plt.show()
 
     def save_to_csv(self, filename: str) -> None:
         """
