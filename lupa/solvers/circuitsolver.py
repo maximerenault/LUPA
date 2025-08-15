@@ -34,7 +34,7 @@ class CircuitSolver:
         self.update_M1_dict = {}
         self.update_diode_dict = {}
         self.signs = {}
-        self.listened = {}
+        self.probed = {}
 
     def set_dt(self, dt: float) -> None:
         self.dt = dt
@@ -55,12 +55,12 @@ class CircuitSolver:
         names = []
         for i in range(self.nbP):
             try:
-                names.append(self.listened[i])
+                names.append(self.probed[i])
             except KeyError:
                 names.append("P" + str(i))
         for i in range(self.nbQ):
             try:
-                names.append(self.listened[self.nbP + i])
+                names.append(self.probed[self.nbP + i])
             except KeyError:
                 names.append("Q" + str(self.nbP + i))
         np.savetxt(
@@ -75,14 +75,14 @@ class CircuitSolver:
             encoding=None,
         )
 
-    def export_listened_solution(self, fname: str) -> None:
+    def export_probed_solution(self, fname: str) -> None:
         np.savetxt(
             fname,
-            self.solution[[i for i in self.listened.keys()]],
+            self.solution[[i for i in self.probed.keys()]],
             fmt="%.11g",
             delimiter=" ",
             newline="\n",
-            header=" ".join([self.listened[i] for i in self.listened.keys()]),
+            header=" ".join([self.probed[i] for i in self.probed.keys()]),
             footer="",
             comments="# ",
             encoding=None,
@@ -115,7 +115,7 @@ class CircuitSolver:
             copy.deepcopy(paths),
             copy.deepcopy(startends),
         )
-        self.listened, self.signs = self.set_listeners(nodes, paths, startends)
+        self.probed, self.signs = self.set_probes(nodes, paths, startends)
 
         time = 0.0
         step = 0
@@ -166,18 +166,18 @@ class CircuitSolver:
             self.solution[key] *= self.signs[key]
 
         _, axs = plt.subplots(2)
-        for key in self.listened.keys():
+        for key in self.probed.keys():
             if key < nbP:
                 axs[0].plot(
                     np.linspace(0, self.maxtime, nb_step + 1),
                     self.solution[key],
-                    label=self.listened[key],
+                    label=self.probed[key],
                 )
             else:
                 axs[1].plot(
                     np.linspace(0, self.maxtime, nb_step + 1),
                     self.solution[key],
-                    label=self.listened[key],
+                    label=self.probed[key],
                 )
         axs[0].legend()
         axs[1].legend()
@@ -535,20 +535,20 @@ class CircuitSolver:
                     startend[1] -= 1
         return nodes, paths, startends
 
-    def set_listeners(
+    def set_probes(
         self,
         nodes: list[GraphNode],
         paths: list[list[GraphEdge]],
         startends: list[list[int]],
     ) -> tuple[dict, dict]:
         """
-        Set the listeners for the nodes and edges.
+        Set the probes for the nodes and edges.
         """
-        listened = {}
+        probed = {}
         signs = {}
         for i, node in enumerate(nodes):
-            if node.listened:
-                listened[i] = node.listener_name
+            if node.probed:
+                probed[i] = node.probe_name
         for i, path in enumerate(paths):
             startend = startends[i]
             idP0 = startend[0]
@@ -561,24 +561,24 @@ class CircuitSolver:
                     sign = -1
                 if isinstance(edge.elem, Ground):
                     idP1 = edge.start
-                if edge.elem.listened != 0:
-                    signs[len(nodes) + i] = sign * edge.elem.listened
-                    listened[len(nodes) + i] = edge.elem.listener_name
+                if edge.elem.probed != 0:
+                    signs[len(nodes) + i] = sign * edge.elem.probed
+                    probed[len(nodes) + i] = edge.elem.probe_name
                 idP0 = idP1
-        return listened, signs
+        return probed, signs
 
     def save_to_csv(self, filename: str) -> None:
         """
-        Save the circuit solver's listened solution to a CSV file.
+        Save the circuit solver's probed solution to a CSV file.
         """
         with open(filename, "w") as f:
-            f.write("Time," + ",".join(self.listened.values()) + "\n")
+            f.write("Time," + ",".join(self.probed.values()) + "\n")
             for i in range(self.solution.shape[1]):
                 f.write(
                     str(i * self.dt)
                     + ","
                     + ",".join(
-                        [str(self.solution[key, i]) for key in self.listened.keys()]
+                        [str(self.solution[key, i]) for key in self.probed.keys()]
                     )
                     + "\n"
                 )

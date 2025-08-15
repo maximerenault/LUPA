@@ -15,8 +15,8 @@ class Node:
         self.elems = []
         self.id = -1
         self.radius = 0.05
-        self.listened = False
-        self.listener_name = ""
+        self.probed = False
+        self.probe_name = ""
 
     def getcoords(self) -> np.ndarray:
         return np.array([self.x, self.y])
@@ -30,7 +30,7 @@ class Node:
         x0, y0 = self.x - radius, self.y + radius
         x1, y1 = self.x + radius, self.y - radius
         x0, y0, x1, y1 = drbd.coord2pix(np.array([x0, y0, x1, y1]))
-        if self.listened:
+        if self.probed:
             fill = "red"
         else:
             fill = ""
@@ -39,7 +39,7 @@ class Node:
         )
 
     def redraw(self, drbd: "DrawingBoard") -> None:
-        if self.listened:
+        if self.probed:
             drbd.canvas.itemconfig(self.id, fill="red")
             radius = self.radius
             x0, y0 = self.x - radius, self.y + radius
@@ -49,8 +49,8 @@ class Node:
         else:
             drbd.canvas.itemconfig(self.id, fill="")
 
-    def set_listened(self, val: int) -> None:
-        self.listened = bool(val)
+    def set_probed(self, val: int) -> None:
+        self.probed = bool(val)
 
     def add_elem(self, elem: "Wire") -> None:
         self.elems.append(elem)

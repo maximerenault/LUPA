@@ -8,8 +8,8 @@ class GraphNode:
     def __init__(self, type: str = "Normal") -> None:
         self.edges = []
         self.type = type
-        self.listened = False
-        self.listener_name = ""
+        self.probed = False
+        self.probe_name = ""
 
     def add_edge(self, edge: GraphEdge) -> None:
         """Add an edge to the node."""

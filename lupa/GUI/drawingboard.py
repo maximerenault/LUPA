@@ -1,4 +1,4 @@
-from lupa.GUI.framelisteners import FrameListeners
+from lupa.GUI.frameprobes import FrameProbes
 from lupa.GUI.framevariables import FrameVariables
 from lupa.GUI.gridzoom import GridZoom
 from lupa.GUI.frameattributes import FrameAttributes
@@ -59,12 +59,12 @@ class DrawingBoard(GridZoom):
         self.frameAttr.grid(row=0, column=0, pady=1)
         self.frameSolve = FrameSolve(self.tabControl, self)
         self.frameSolve.grid(row=0, column=0, pady=1)
-        self.frameListeners = FrameListeners(self.tabControl, self)
+        self.frameProbes = FrameProbes(self.tabControl, self)
         self.frameVariables = FrameVariables(self.tabControl, self)
 
         self.tabControl.add(self.frameAttr, text="Attributes")
         self.tabControl.add(self.frameSolve, text="Solver")
-        self.tabControl.add(self.frameListeners, text="Listeners")
+        self.tabControl.add(self.frameProbes, text="Probes")
         self.tabControl.add(self.frameVariables, text="Consts & Vars")
         self.tabControl.grid(row=0, column=1, rowspan=3, pady=1, sticky="nsew")
 
@@ -240,15 +240,13 @@ class DrawingBoard(GridZoom):
             element.draw(self)
 
             for i in range(2):
-                element.set_listenP(i, el_dict["pressure_listeners"][i], self)
-                iid = self.frameListeners.get_node_iid(element.nodes[i].id)
-                self.frameListeners.edit_listener(
-                    iid, el_dict["pressure_listener_names"][i]
-                )
+                element.set_probeP(i, el_dict["pressure_probes"][i], self)
+                iid = self.frameProbes.get_node_iid(element.nodes[i].id)
+                self.frameProbes.edit_probe(iid, el_dict["pressure_probe_names"][i])
 
-            element.set_listenQ(int(el_dict["flow_listener"]), self)
-            iid = self.frameListeners.get_elem_iid(element.ids[0])
-            self.frameListeners.edit_listener(iid, el_dict["flow_listener_name"])
+            element.set_probeQ(int(el_dict["flow_probe"]), self)
+            iid = self.frameProbes.get_elem_iid(element.ids[0])
+            self.frameProbes.edit_probe(iid, el_dict["flow_probe_name"])
 
             self.cgeom.add_elem(element)
             self.cgeom.add_elem_nodes(element)

@@ -26,8 +26,8 @@ class Wire:
         self.bbox = -1
         self.ids = []
         self.widths = [1]
-        self.listened = 0
-        self.listener_name = ""
+        self.probed = 0
+        self.probe_name = ""
         self.Qid = -1
         self.Qsize = 1.0
 
@@ -72,7 +72,7 @@ class Wire:
 
     def drawQ(self, drbd: "DrawingBoard") -> None:
         x0, y0, x1, y1, x2, y2 = drbd.coord2pix(self.get_Q_coords())
-        if self.listened:
+        if self.probed:
             fill = "red"
         else:
             fill = ""
@@ -81,7 +81,7 @@ class Wire:
         )
 
     def redrawQ(self, drbd: "DrawingBoard") -> None:
-        if self.listened:
+        if self.probed:
             drbd.canvas.itemconfig(self.Qid, fill="red")
             x0, y0, x1, y1, x2, y2 = drbd.coord2pix(self.get_Q_coords())
             drbd.canvas.coords(self.Qid, x0, y0, x1, y1, x2, y2)
@@ -148,7 +148,7 @@ class Wire:
         length = np.linalg.norm(vec)
         if length == 0:
             return np.concatenate((coords, coords))
-        sign = self.listened
+        sign = self.probed
         w = 0.85 * length
         h = 0.2 * self.Qsize
         vec = vec / length
@@ -177,26 +177,26 @@ class Wire:
     def get_other_end(self, node: Node) -> Node:
         return self.nodes[(self.get_node_id(node) + 1) % 2]
 
-    def get_listenP(self, pos: int) -> bool:
-        return self.nodes[pos].listened
+    def get_probeP(self, pos: int) -> bool:
+        return self.nodes[pos].probed
 
-    def set_listenP(self, pos: int, val: int, drbd: "DrawingBoard") -> None:
-        self.nodes[pos].set_listened(val)
+    def set_probeP(self, pos: int, val: int, drbd: "DrawingBoard") -> None:
+        self.nodes[pos].set_probed(val)
         if val:
-            drbd.frameListeners.add_pressure_listener(self.nodes[pos])
+            drbd.frameProbes.add_pressure_probe(self.nodes[pos])
         else:
-            drbd.frameListeners.remove_pressure_listener(self.nodes[pos])
+            drbd.frameProbes.remove_pressure_probe(self.nodes[pos])
 
-    def get_listenQ(self) -> bool:
-        return self.listened
+    def get_probeQ(self) -> bool:
+        return self.probed
 
-    def set_listenQ(self, val: int, drbd: "DrawingBoard") -> None:
-        oldval = self.listened
-        self.listened = val
+    def set_probeQ(self, val: int, drbd: "DrawingBoard") -> None:
+        oldval = self.probed
+        self.probed = val
         if oldval == 0 and val != 0:
-            drbd.frameListeners.add_flow_listener(self)
+            drbd.frameProbes.add_flow_probe(self)
         elif oldval != 0 and val == 0:
-            drbd.frameListeners.remove_flow_listener(self)
+            drbd.frameProbes.remove_flow_probe(self)
 
     def onElemClick(self, event: Event, drbd: "DrawingBoard") -> None:
         if drbd.drag_function == "Edit":
@@ -286,13 +286,13 @@ class Wire:
             nodes_list.index(self.nodes[0]),
             nodes_list.index(self.nodes[1]),
         ]
-        my_dict["pressure_listeners"] = [self.get_listenP(0), self.get_listenP(1)]
-        my_dict["pressure_listener_names"] = [
-            self.nodes[0].listener_name,
-            self.nodes[1].listener_name,
+        my_dict["pressure_probes"] = [self.get_probeP(0), self.get_probeP(1)]
+        my_dict["pressure_probe_names"] = [
+            self.nodes[0].probe_name,
+            self.nodes[1].probe_name,
         ]
-        my_dict["flow_listener"] = self.get_listenQ()
-        my_dict["flow_listener_name"] = self.listener_name
+        my_dict["flow_probe"] = self.get_probeQ()
+        my_dict["flow_probe_name"] = self.probe_name
         my_dict["active"] = self.active
         my_dict["value"] = self.get_value()
         return my_dict

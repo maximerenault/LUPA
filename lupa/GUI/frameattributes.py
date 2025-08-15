@@ -59,21 +59,21 @@ class FrameAttributes(ttk.Frame):
                     "labsta": {"type": "label", "grid": {"row": 1, "column": 0}},
                     "startx": {"type": "entry", "grid": {"row": 1, "column": 1}},
                     "starty": {"type": "entry", "grid": {"row": 1, "column": 2}},
-                    "lablistenPstart": {
+                    "labprobePstart": {
                         "type": "label",
                         "grid": {"row": 2, "column": 0},
                     },
-                    "listenPstart": {
+                    "probePstart": {
                         "type": "checkbox",
                         "grid": {"row": 2, "column": 1},
                     },
                     "labend": {"type": "label", "grid": {"row": 3, "column": 0}},
                     "endx": {"type": "entry", "grid": {"row": 3, "column": 1}},
                     "endy": {"type": "entry", "grid": {"row": 3, "column": 2}},
-                    "lablistenPend": {"type": "label", "grid": {"row": 4, "column": 0}},
-                    "listenPend": {"type": "checkbox", "grid": {"row": 4, "column": 1}},
-                    "lablistenQ": {"type": "label", "grid": {"row": 5, "column": 0}},
-                    "listenQ": {
+                    "labprobePend": {"type": "label", "grid": {"row": 4, "column": 0}},
+                    "probePend": {"type": "checkbox", "grid": {"row": 4, "column": 1}},
+                    "labprobeQ": {"type": "label", "grid": {"row": 5, "column": 0}},
+                    "probeQ": {
                         "type": "radio",
                         "grid": {
                             "row": 5,
@@ -114,21 +114,21 @@ class FrameAttributes(ttk.Frame):
                     "labsta": {"type": "label", "grid": {"row": 1, "column": 0}},
                     "startx": {"type": "entry", "grid": {"row": 1, "column": 1}},
                     "starty": {"type": "entry", "grid": {"row": 1, "column": 2}},
-                    "lablistenPstart": {
+                    "labprobePstart": {
                         "type": "label",
                         "grid": {"row": 2, "column": 0},
                     },
-                    "listenPstart": {
+                    "probePstart": {
                         "type": "checkbox",
                         "grid": {"row": 2, "column": 1},
                     },
                     "labend": {"type": "label", "grid": {"row": 3, "column": 0}},
                     "endx": {"type": "entry", "grid": {"row": 3, "column": 1}},
                     "endy": {"type": "entry", "grid": {"row": 3, "column": 2}},
-                    "lablistenPend": {"type": "label", "grid": {"row": 4, "column": 0}},
-                    "listenPend": {"type": "checkbox", "grid": {"row": 4, "column": 1}},
-                    "lablistenQ": {"type": "label", "grid": {"row": 5, "column": 0}},
-                    "listenQ": {
+                    "labprobePend": {"type": "label", "grid": {"row": 4, "column": 0}},
+                    "probePend": {"type": "checkbox", "grid": {"row": 4, "column": 1}},
+                    "labprobeQ": {"type": "label", "grid": {"row": 5, "column": 0}},
+                    "probeQ": {
                         "type": "radio",
                         "grid": {
                             "row": 5,
@@ -188,21 +188,21 @@ class FrameAttributes(ttk.Frame):
                     "labsta": {"type": "label", "grid": {"row": 1, "column": 0}},
                     "startx": {"type": "entry", "grid": {"row": 1, "column": 1}},
                     "starty": {"type": "entry", "grid": {"row": 1, "column": 2}},
-                    "lablistenPstart": {
+                    "labprobePstart": {
                         "type": "label",
                         "grid": {"row": 2, "column": 0},
                     },
-                    "listenPstart": {
+                    "probePstart": {
                         "type": "checkbox",
                         "grid": {"row": 2, "column": 1},
                     },
                     "labend": {"type": "label", "grid": {"row": 3, "column": 0}},
                     "endx": {"type": "entry", "grid": {"row": 3, "column": 1}},
                     "endy": {"type": "entry", "grid": {"row": 3, "column": 2}},
-                    "lablistenPend": {"type": "label", "grid": {"row": 4, "column": 0}},
-                    "listenPend": {"type": "checkbox", "grid": {"row": 4, "column": 1}},
-                    "lablistenQ": {"type": "label", "grid": {"row": 5, "column": 0}},
-                    "listenQ": {
+                    "labprobePend": {"type": "label", "grid": {"row": 4, "column": 0}},
+                    "probePend": {"type": "checkbox", "grid": {"row": 4, "column": 1}},
+                    "labprobeQ": {"type": "label", "grid": {"row": 5, "column": 0}},
+                    "probeQ": {
                         "type": "radio",
                         "grid": {
                             "row": 5,
@@ -374,9 +374,9 @@ class FrameAttributes(ttk.Frame):
             "labnam": {"text": "Name"},
             "labval": {"text": "Value"},
             "labsta": {"text": "Start"},
-            "lablistenPstart": {"text": "Listen P"},
-            "lablistenPend": {"text": "Listen P"},
-            "lablistenQ": {"text": "Listen Q"},
+            "labprobePstart": {"text": "Probe P"},
+            "labprobePend": {"text": "Probe P"},
+            "labprobeQ": {"text": "Probe Q"},
             "labend": {"text": "End"},
             "labdir": {"text": "Direction"},
             "clear": {"text": "Attributes edition panel"},
@@ -422,24 +422,24 @@ class FrameAttributes(ttk.Frame):
         }
 
         self.checkbox_options = {
-            "listenPstart": {
+            "probePstart": {
                 "text": "on/off",
                 "onoff": 0,
-                "command": lambda var: self.set_listenP(0, var),
+                "command": lambda var: self.set_probeP(0, var),
             },
-            "listenPend": {
+            "probePend": {
                 "text": "on/off",
                 "onoff": 0,
-                "command": lambda var: self.set_listenP(1, var),
+                "command": lambda var: self.set_probeP(1, var),
             },
         }
 
         self.radio_options = {
-            "listenQ": {
+            "probeQ": {
                 "texts": ["off", "Q", "-Q"],
                 "values": [0, 1, -1],
                 "value": 0,
-                "command": self.set_listenQ,
+                "command": self.set_probeQ,
             },
         }
 
@@ -540,24 +540,24 @@ class FrameAttributes(ttk.Frame):
             el.setend(coords[0] - 1, coords[1])
         el.redraw(self.drbd)
 
-    def set_listenP(self, pos: str, var: tk.StringVar) -> None:
+    def set_probeP(self, pos: str, var: tk.StringVar) -> None:
         """
-        Change pressure listening from True to False
+        Change pressure probeing from True to False
         and the other way around.
         """
         el: Wire = self.drbd.cgeom.elems[self.elem]
         val = var.get()
-        el.set_listenP(pos, val, self.drbd)
+        el.set_probeP(pos, val, self.drbd)
         el.redraw(self.drbd)
 
-    def set_listenQ(self, var: tk.StringVar) -> None:
+    def set_probeQ(self, var: tk.StringVar) -> None:
         """
-        Set Q listening flag to 0 if off, 1 if same direction
+        Set Q probeing flag to 0 if off, 1 if same direction
         as elem, -1 otherwise.
         """
         el: Wire = self.drbd.cgeom.elems[self.elem]
         val = var.get()
-        el.set_listenQ(val, self.drbd)
+        el.set_probeQ(val, self.drbd)
         el.redraw(self.drbd)
 
     def delete_elem(self) -> None:
@@ -635,9 +635,9 @@ class FrameAttributes(ttk.Frame):
         self.entry_options["endx"]["insert"] = int(coords[2])
         self.entry_options["endy"]["insert"] = int(coords[3])
 
-        self.checkbox_options["listenPstart"]["onoff"] = int(el.get_listenP(0))
-        self.checkbox_options["listenPend"]["onoff"] = int(el.get_listenP(1))
-        self.radio_options["listenQ"]["value"] = int(el.get_listenQ())
+        self.checkbox_options["probePstart"]["onoff"] = int(el.get_probeP(0))
+        self.checkbox_options["probePend"]["onoff"] = int(el.get_probeP(1))
+        self.radio_options["probeQ"]["value"] = int(el.get_probeQ())
 
         if el.active:
             try:

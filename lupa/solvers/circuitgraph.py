@@ -34,15 +34,15 @@ class CircuitGraph:
             idnode = len(nodes) - 1
 
             for cnode in subcnodes:
-                if cnode.listened:
-                    nodes[-1].listened = True
-                    nodes[-1].listener_name = cnode.listener_name
+                if cnode.probed:
+                    nodes[-1].probed = True
+                    nodes[-1].probe_name = cnode.probe_name
                 celem = cnode.elems[0]
                 if type(celem) is Wire:
                     # if we reach a wire, we collapse it
                     otherend = celem.get_other_end(cnode)
-                    if otherend.listened:
-                        nodes[-1].listened = True
+                    if otherend.probed:
+                        nodes[-1].probed = True
                     idstart = bisect_left(cnodes, otherend)
                     idend = bisect_right(cnodes, otherend)
                     # we prevent going back through the same wire by removing the node.
