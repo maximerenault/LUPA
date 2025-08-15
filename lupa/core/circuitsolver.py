@@ -1,5 +1,7 @@
-from typing import Generator
-import numpy as np
+from lupa.exceptions.circuitsolverexceptions import (
+    OverconstrainedError,
+    UnderconstrainedError,
+)
 from lupa.elements.capacitor import Capacitor
 from lupa.elements.diode import Diode
 from lupa.elements.ground import Ground
@@ -10,8 +12,10 @@ from lupa.elements.resistor import Resistor
 from lupa.core.graphedge import GraphEdge
 from lupa.core.graphnode import GraphNode
 from lupa.core.timeintegration import TimeIntegration
-import matplotlib.pyplot as plt
 from lupa.utils.calculator import calculate as calc, deriv_finite_diff as deriv
+from typing import Generator
+import numpy as np
+import matplotlib.pyplot as plt
 import copy
 
 DIODE_RESISTOR_SUBSTITUTE = 0.1
@@ -99,7 +103,7 @@ class CircuitSolver:
         nodes: list[GraphNode],
         paths: list[list[GraphEdge]],
         startends: list[list[int]],
-    ) -> int:
+    ) -> None:
         """
         Method that takes all the steps to solve the system:
         - check solution existence necessary condition
@@ -111,9 +115,7 @@ class CircuitSolver:
         - builds LHS
         - solves LHS.x = RHS at each timestep
         """
-        cns = self.check_no_solution(nbP, nbQ, paths, startends)
-        if cns:
-            return cns
+        self.check_no_solution(nbP, nbQ, paths, startends)
         nodes, paths, startends = self.delete_node_sources(
             copy.deepcopy(nodes),
             copy.deepcopy(paths),
@@ -168,7 +170,6 @@ class CircuitSolver:
 
         for key in self.signs.keys():
             self.solution[key] *= self.signs[key]
-        return 0
 
     def build_M0M1(
         self, nbP: int, paths: list[list[GraphEdge]], startends: list[list[int]]
@@ -453,12 +454,9 @@ class CircuitSolver:
         nbQ: int,
         paths: list[list[GraphEdge]],
         startends: list[list[int]],
-    ) -> int:
+    ) -> None:
         """
         Check if the problem has a solution.
-        0 : OK
-        1 : under constrained
-        2 : over constrained
         """
         c = 0
         # Count equations from elements
@@ -473,10 +471,9 @@ class CircuitSolver:
                 c += 1
         # Compare with number of unknowns
         if c > nbP + nbQ:
-            return 2
-        if c < nbP + nbQ:
-            return 1
-        return 0
+            raise OverconstrainedError(c, nbP + nbQ)
+        elif c < nbP + nbQ:
+            raise UnderconstrainedError(c, nbP + nbQ)
 
     def delete_node_sources(
         self,

@@ -3,6 +3,10 @@ from tkinter import ttk
 import tkinter as tk
 import matplotlib
 from lupa.exceptions.solveframeexceptions import BadNumberError
+from lupa.exceptions.circuitsolverexceptions import (
+    UnderconstrainedError,
+    OverconstrainedError,
+)
 from lupa.core.circuitgraph import CircuitGraph
 from lupa.core.circuitsolver import CircuitSolver
 from lupa.core.timeintegration import TimeIntegration
@@ -183,12 +187,10 @@ class FrameSolve(ttk.Frame):
         Paths, StartEnds = cgraph.graph_max_len_non_branching_paths()
         nbQ = len(Paths)
         nbP = len([n for n in cgraph.nodes if n.type != "Source"])
-        cns = self.csolver.solve(nbP, nbQ, cgraph.nodes, Paths, StartEnds)
-        if cns == 1:
-            tk.messagebox.showerror("Error", "The problem is under constrained.")
-            return
-        if cns == 2:
-            tk.messagebox.showerror("Error", "The problem is over constrained.")
+        try:
+            self.csolver.solve(nbP, nbQ, cgraph.nodes, Paths, StartEnds)
+        except (UnderconstrainedError, OverconstrainedError) as e:
+            tk.messagebox.showerror("Error", str(e))
             return
         cns = self.csolver.plot_probes()
         if cns == 1:
