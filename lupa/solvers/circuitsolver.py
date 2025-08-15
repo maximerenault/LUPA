@@ -181,7 +181,7 @@ class CircuitSolver:
         update_diode_dict = {}
         update_M0_dict = {}
         update_M1_dict = {}
-        line = 0
+        row = 0
         idQ = nbP
         for i, path in enumerate(paths):
             startend = startends[i]
@@ -194,46 +194,46 @@ class CircuitSolver:
                 if type(edge.elem) is Resistor:
                     # P = R * Q
                     if edge.elem.active:
-                        update_M0_dict[line] = {
+                        update_M0_dict[row] = {
                             idQ: calc("-(" + edge.elem.get_value() + ")")
                         }
                     else:
-                        M0[line, idQ] = -edge.elem.get_value()
-                    M0[line, idP1] = -1
-                    M0[line, idP0] = 1
+                        M0[row, idQ] = -edge.elem.get_value()
+                    M0[row, idP1] = -1
+                    M0[row, idP0] = 1
                 elif type(edge.elem) is Capacitor:
                     # Q = C * d(P0 - P1)/dt + dC/dt * (P0 - P1)
                     if edge.elem.active:
-                        update_M0_dict[line] = {
+                        update_M0_dict[row] = {
                             idP1: deriv(calc("-(" + edge.elem.get_value() + ")")),
                             idP0: deriv(calc(edge.elem.get_value())),
                         }
-                        update_M1_dict[line] = {
+                        update_M1_dict[row] = {
                             idP1: calc("-(" + edge.elem.get_value() + ")"),
                             idP0: calc(edge.elem.get_value()),
                         }
                     else:
-                        M1[line, idP1] = -edge.elem.get_value()
-                        M1[line, idP0] = edge.elem.get_value()
-                    M0[line, idQ] = -1
+                        M1[row, idP1] = -edge.elem.get_value()
+                        M1[row, idP0] = edge.elem.get_value()
+                    M0[row, idQ] = -1
                 elif type(edge.elem) is Inductor:
                     # P = L * dQ/dt + dL/dt * Q
                     if edge.elem.active:
-                        update_M0_dict[line] = {
+                        update_M0_dict[row] = {
                             idQ: deriv(calc("-(" + edge.elem.get_value() + ")"))
                         }
-                        update_M1_dict[line] = {
+                        update_M1_dict[row] = {
                             idQ: calc("-(" + edge.elem.get_value() + ")"),
                         }
                     else:
-                        M1[line, idQ] = -edge.elem.get_value()
-                    M0[line, idP1] = -1
-                    M0[line, idP0] = 1
+                        M1[row, idQ] = -edge.elem.get_value()
+                    M0[row, idP1] = -1
+                    M0[row, idP0] = 1
                 elif type(edge.elem) is Diode:
-                    M0[line, idP1] = -1
-                    M0[line, idP0] = 1
+                    M0[row, idP1] = -1
+                    M0[row, idP0] = 1
                     if idP0 == edge.start:
-                        update_diode_dict[line] = [
+                        update_diode_dict[row] = [
                             True,  # True = Open
                             idP0,
                             idP1,
@@ -241,7 +241,7 @@ class CircuitSolver:
                             1,  # 1 -> Q
                         ]
                     else:
-                        update_diode_dict[line] = [
+                        update_diode_dict[row] = [
                             True,  # True = Open
                             idP0,
                             idP1,
@@ -250,19 +250,19 @@ class CircuitSolver:
                         ]
                 elif type(edge.elem) is Ground or type(edge.elem) is PSource:
                     idP1 = edge.start
-                    M0[line, idP1] = 1
+                    M0[row, idP1] = 1
                 elif type(edge.elem) is QSource:
                     if idP0 == edge.start:
-                        M0[line, idQ] = -1
+                        M0[row, idQ] = -1
                     else:
-                        M0[line, idQ] = 1
+                        M0[row, idQ] = 1
                     idP1 = edge.start
                 else:
                     raise TypeError(
                         f"Unknown element type: {type(edge.elem)} in edge {edge}"
                     )
                 idP0 = idP1
-                line += 1
+                row += 1
             idQ += 1
         # Branching equations
         arr = np.array(startends).flat
@@ -273,11 +273,11 @@ class CircuitSolver:
                 idQ = nbP
                 for startend in startends:
                     if startend[0] == idnode:
-                        M0[line, idQ] = -1
+                        M0[row, idQ] = -1
                     elif startend[1] == idnode:
-                        M0[line, idQ] = 1
+                        M0[row, idQ] = 1
                     idQ += 1
-                line += 1
+                row += 1
         return update_diode_dict, update_M0_dict, update_M1_dict
 
     def update_M0M1(self, time: float) -> None:
@@ -285,37 +285,37 @@ class CircuitSolver:
         Update M0 and M1 according to the live elements
         in update_M0_dict and update_M1_dict.
         """
-        for line in self.update_M0_dict.keys():
-            for col in self.update_M0_dict[line].keys():
-                self.M0[line, col] = self.update_M0_dict[line][col](time)
-        for line in self.update_M1_dict.keys():
-            for col in self.update_M1_dict[line].keys():
-                self.M1[line, col] = self.update_M1_dict[line][col](time)
+        for row in self.update_M0_dict.keys():
+            for col in self.update_M0_dict[row].keys():
+                self.M0[row, col] = self.update_M0_dict[row][col](time)
+        for row in self.update_M1_dict.keys():
+            for col in self.update_M1_dict[row].keys():
+                self.M1[row, col] = self.update_M1_dict[row][col](time)
 
-    def set_diode(self, line: int, diode_open: bool, resistor: bool = False) -> None:
+    def set_diode(self, row: int, diode_open: bool, resistor: bool = False) -> None:
         """Sets the state of a diode to diode_open. Replaces it with a resistor if
         resistor is True.
 
         Args:
-            line (int): Line of matrix to which the diode is linked
+            row (int): Row of matrix to which the diode is linked
             diode_open (bool): State of the diode wanted
             resistor (bool, optional): Whether to replace the diode with a resistor.
                 Defaults to False.
         """
-        _, idP0, idP1, idQ, _ = self.update_diode_dict[line]
-        self.update_diode_dict[line][0] = diode_open
+        _, idP0, idP1, idQ, _ = self.update_diode_dict[row]
+        self.update_diode_dict[row][0] = diode_open
         if resistor:
-            self.M0[line, idP1] = -1
-            self.M0[line, idP0] = 1
-            self.M0[line, idQ] = -0.1
+            self.M0[row, idP1] = -1
+            self.M0[row, idP0] = 1
+            self.M0[row, idQ] = -0.1
         elif diode_open:
-            self.M0[line, idP1] = 1
-            self.M0[line, idP0] = -1
-            self.M0[line, idQ] = 0
+            self.M0[row, idP1] = 1
+            self.M0[row, idP0] = -1
+            self.M0[row, idQ] = 0
         else:
-            self.M0[line, idP1] = 0
-            self.M0[line, idP0] = 0
-            self.M0[line, idQ] = 1
+            self.M0[row, idP1] = 0
+            self.M0[row, idP0] = 0
+            self.M0[row, idQ] = 1
 
     def update_diode(self, step: int) -> bool:
         """Updates the state of a diode according to the flow passing trough
@@ -328,18 +328,18 @@ class CircuitSolver:
             bool: Whether an update was made or not
         """
         recompute = False
-        for line in self.update_diode_dict.keys():
-            diode_open, idP0, idP1, idQ, signQ = self.update_diode_dict[line]
+        for row in self.update_diode_dict.keys():
+            diode_open, idP0, idP1, idQ, signQ = self.update_diode_dict[row]
             if diode_open:
                 Q = self.solution[idQ, step + 1]
                 if signQ * Q < 0:
-                    self.set_diode(line, diode_open=False)
+                    self.set_diode(row, diode_open=False)
                     recompute = True
             else:
                 P0 = self.solution[idP0, step + 1]
                 P1 = self.solution[idP1, step + 1]
                 if signQ * (P0 - P1) > 0:
-                    self.set_diode(line, diode_open=True)
+                    self.set_diode(row, diode_open=True)
                     recompute = True
         return recompute
 
@@ -350,16 +350,16 @@ class CircuitSolver:
         Yields:
             Generator[None, None, None]: Nothing
         """
-        lines = [line for line in self.update_diode_dict.keys()]
-        n = len(lines)
+        rows = [row for row in self.update_diode_dict.keys()]
+        n = len(rows)
 
         for b in range(1 << n):
             # Change list of True/False "not intelligently"
             s = bin(b)[2:].zfill(n)
             diode_pos = map(lambda x: not bool(int(x)), list(s))
-            for line in lines:
+            for row in rows:
                 diode_open = next(diode_pos)
-                self.set_diode(line, diode_open)
+                self.set_diode(row, diode_open)
             yield
 
     def recompute_diodes(self, step: int) -> None:
@@ -369,8 +369,8 @@ class CircuitSolver:
         Args:
             step (int): Step of the simulation
         """
-        for line in self.update_diode_dict:
-            self.set_diode(line, False, True)
+        for row in self.update_diode_dict:
+            self.set_diode(row, False, True)
         self.build_LHS()
         self.build_RHS(step)
         self.solution[:, step + 1] = np.linalg.solve(self.LHS, self.RHS)
@@ -381,15 +381,15 @@ class CircuitSolver:
         Build live sources dict from list of paths.
         """
         update_source_dict = {}
-        line = 0
+        row = 0
         for path in paths:
             for edge in path:
                 if type(edge.elem) is PSource or type(edge.elem) is QSource:
                     if edge.elem.active:
-                        update_source_dict[line] = calc(edge.elem.get_value())
+                        update_source_dict[row] = calc(edge.elem.get_value())
                     else:
-                        self.Source[line] = edge.elem.get_value()
-                line += 1
+                        self.Source[row] = edge.elem.get_value()
+                row += 1
         return update_source_dict
 
     def update_source(self, time: float) -> None:
@@ -397,8 +397,8 @@ class CircuitSolver:
         Update source vector according to the live sources
         in update_source_dict.
         """
-        for line in self.update_source_dict.keys():
-            self.Source[line] = self.update_source_dict[line](time)
+        for row in self.update_source_dict.keys():
+            self.Source[row] = self.update_source_dict[row](time)
 
     def build_LHS(self) -> None:
         """
