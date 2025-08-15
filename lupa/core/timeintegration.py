@@ -1,11 +1,19 @@
 import numpy as np
+from enum import Enum
+from typing import Callable
+
+
+class TimeIntegration(Enum):
+    BDF = "BDF"
+    BDF2 = "BDF2"
+    BDF3 = "BDF3"
 
 
 def generalized_alpha_step(
     M: np.ndarray,
     D: np.ndarray,
     K: np.ndarray,
-    F: callable[float, np.ndarray],
+    F: Callable[[float], np.ndarray],
     a: np.ndarray,
     v: np.ndarray,
     x: np.ndarray,
@@ -20,9 +28,9 @@ def generalized_alpha_step(
     Journal of Applied Mechanics, 60, 1993.
 
     Args:
-        M (np.ndarray): square mass matrix
-        D (np.ndarray): square damping matrix
-        K (np.ndarray): square stiffness matrix
+        M (np.ndarray): square mass matrix (for a)
+        D (np.ndarray): square damping matrix (for v)
+        K (np.ndarray): square stiffness matrix (for x)
         F (function -> np.ndarray): source vector generator
         a (np.ndarray): acceleration a_n
         v (np.ndarray): velocity v_n

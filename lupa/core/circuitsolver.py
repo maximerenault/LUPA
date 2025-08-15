@@ -7,12 +7,14 @@ from lupa.elements.inductor import Inductor
 from lupa.elements.psource import PSource
 from lupa.elements.qsource import QSource
 from lupa.elements.resistor import Resistor
-from lupa.solvers.graphedge import GraphEdge
-from lupa.solvers.graphnode import GraphNode
+from lupa.core.graphedge import GraphEdge
+from lupa.core.graphnode import GraphNode
+from lupa.core.timeintegration import TimeIntegration
 import matplotlib.pyplot as plt
 from lupa.utils.calculator import calculate as calc, deriv_finite_diff as deriv
 import copy
-from tkinter import messagebox
+
+DIODE_RESISTOR_SUBSTITUTE = 0.1
 
 
 class CircuitSolver:
@@ -27,9 +29,7 @@ class CircuitSolver:
         self.dt = 0.01
         self.maxtime = 10.0
         self.solution = None
-        # Backwards Differentiation Formula
-        self.time_integrations = ["BDF", "BDF2", "BDF3"]
-        self.time_integration = self.time_integrations[1]
+        self.time_integration = TimeIntegration.BDF2
         self.update_source_dict = {}
         self.update_M0_dict = {}
         self.update_M1_dict = {}
@@ -50,7 +50,10 @@ class CircuitSolver:
         return self.maxtime
 
     def set_time_integration(self, ti: str) -> None:
-        self.time_integration = ti
+        try:
+            self.time_integration = TimeIntegration(ti)
+        except ValueError:
+            raise ValueError(f"Unknown time integration method: {ti}")
 
     def export_full_solution(self, fname: str) -> None:
         names = []
@@ -165,8 +168,6 @@ class CircuitSolver:
 
         for key in self.signs.keys():
             self.solution[key] *= self.signs[key]
-
-        self.plot_probes()
         return 0
 
     def build_M0M1(
@@ -307,7 +308,7 @@ class CircuitSolver:
         if resistor:
             self.M0[row, idP1] = -1
             self.M0[row, idP0] = 1
-            self.M0[row, idQ] = -0.1
+            self.M0[row, idQ] = -DIODE_RESISTOR_SUBSTITUTE
         elif diode_open:
             self.M0[row, idP1] = 1
             self.M0[row, idP0] = -1
@@ -404,11 +405,11 @@ class CircuitSolver:
         """
         Build left hand side of the equation.
         """
-        if self.time_integration == "BDF":
+        if self.time_integration == TimeIntegration.BDF:
             self.LHS = self.M0 + self.M1 / self.dt
-        elif self.time_integration == "BDF2":
+        elif self.time_integration == TimeIntegration.BDF2:
             self.LHS = self.M0 + 3 * self.M1 / (2 * self.dt)
-        elif self.time_integration == "BDF3":
+        elif self.time_integration == TimeIntegration.BDF3:
             self.LHS = self.M0 + 11 * self.M1 / (6 * self.dt)
         else:
             raise ValueError(
@@ -420,17 +421,17 @@ class CircuitSolver:
         """
         Build right hand side of the equation.
         """
-        if self.time_integration == "BDF":
+        if self.time_integration == TimeIntegration.BDF:
             self.RHS = self.Source + np.matmul(
                 self.M1, self.solution[:, step] / self.dt
             )
-        elif self.time_integration == "BDF2":
+        elif self.time_integration == TimeIntegration.BDF2:
             self.RHS = self.Source + np.matmul(
                 self.M1,
                 (4 * self.solution[:, step] - self.solution[:, step - 1])
                 / (2 * self.dt),
             )
-        elif self.time_integration == "BDF3":
+        elif self.time_integration == TimeIntegration.BDF3:
             self.RHS = self.Source + np.matmul(
                 self.M1,
                 (
@@ -551,17 +552,12 @@ class CircuitSolver:
                 idP0 = idP1
         return probed, signs
 
-    def plot_probes(self) -> None:
+    def plot_probes(self) -> int:
         """
         Plot the probes defined in the circuit.
         """
         if not self.probed:
-            messagebox.showinfo(
-                "Info",
-                "No probes defined, nothing to plot. "
-                "You can define probes in the Attributes panel.",
-            )
-            return
+            return 1
 
         _, axs = plt.subplots(2)
         with_p = False
@@ -592,6 +588,7 @@ class CircuitSolver:
         plt.suptitle("Circuit Solver Probes")
         plt.tight_layout()
         plt.show()
+        return 0
 
     def save_to_csv(self, filename: str) -> None:
         """

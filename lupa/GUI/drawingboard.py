@@ -12,7 +12,7 @@ from lupa.elements.wire import Wire
 from lupa.elements.resistor import Resistor
 from lupa.elements.capacitor import Capacitor
 from lupa.elements.inductor import Inductor
-from lupa.solvers.circuitgeom import CircuitGeom
+from lupa.core.circuitgeom import CircuitGeom
 from lupa.utils.geometry import start_from_elem, elem_init_pos, intersect, distance
 from lupa.utils.io import loadfromjson, savetojson
 import tkinter as tk

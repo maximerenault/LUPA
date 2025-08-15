@@ -107,7 +107,7 @@ lupa path/to/circuit.json
 LUPA/
 ├── elements/         # Circuit element definitions
 ├── GUI/              # User interface components
-├── solvers/          # Circuit solving algorithms
+├── core/             # Core algorithms
 ├── utils/            # Utility functions
 ├── exceptions/       # Custom exception classes
 ├── tests/            # Test suite

@@ -1,4 +1,4 @@
-from lupa.solvers.graphedge import GraphEdge
+from lupa.core.graphedge import GraphEdge
 
 
 types = ["Normal", "Source"]

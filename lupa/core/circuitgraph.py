@@ -1,8 +1,8 @@
 from lupa.elements.node import Node
 from lupa.elements.wire import Wire
 from lupa.elements.ground import Ground
-from lupa.solvers.graphedge import GraphEdge
-from lupa.solvers.graphnode import GraphNode
+from lupa.core.graphedge import GraphEdge
+from lupa.core.graphnode import GraphNode
 from bisect import bisect_left, bisect_right
 
 

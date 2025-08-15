@@ -3,8 +3,9 @@ from tkinter import ttk
 import tkinter as tk
 import matplotlib
 from lupa.exceptions.solveframeexceptions import BadNumberError
-from lupa.solvers.circuitgraph import CircuitGraph
-from lupa.solvers.circuitsolver import CircuitSolver
+from lupa.core.circuitgraph import CircuitGraph
+from lupa.core.circuitsolver import CircuitSolver
+from lupa.core.timeintegration import TimeIntegration
 from lupa.utils.strings import check_strfloat_pos
 from typing import TYPE_CHECKING
 
@@ -117,11 +118,9 @@ class FrameSolve(ttk.Frame):
 
         self.cbbox_options = {
             "time integration": {
-                "values": self.csolver.time_integrations,
+                "values": [ti.value for ti in TimeIntegration],
                 "bindfunc": self.update_time_integration,
-                "current": self.csolver.time_integrations.index(
-                    self.csolver.time_integration
-                ),
+                "current": list(TimeIntegration).index(self.csolver.time_integration),
             },
         }
 
@@ -170,7 +169,8 @@ class FrameSolve(ttk.Frame):
         """
         Update time integration scheme
         """
-        self.csolver.set_time_integration(event.widget.get())
+        ti = TimeIntegration(event.widget.get())
+        self.csolver.set_time_integration(ti)
 
     def solve(self) -> None:
         # Pre-solving operations : removing wires, creating readable graph
@@ -190,6 +190,13 @@ class FrameSolve(ttk.Frame):
         if cns == 2:
             tk.messagebox.showerror("Error", "The problem is over constrained.")
             return
+        cns = self.csolver.plot_probes()
+        if cns == 1:
+            tk.messagebox.showinfo(
+                "Info",
+                "No probes defined, nothing to plot. "
+                "You can define probes in the Attributes panel.",
+            )
         return
 
     def save_csv(self) -> None:
