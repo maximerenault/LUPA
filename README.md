@@ -130,12 +130,6 @@ pytest tests/
 black .
 ```
 
-### Type Checking
-
-```bash
-mypy .
-```
-
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.

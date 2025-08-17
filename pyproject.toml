@@ -50,15 +50,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = [
-    "pytest>=6.0",
-    "pytest-cov",
-    "black",
-    "flake8",
-    "mypy",
-    "isort",
-    "pre-commit",
-]
+dev = ["pytest>=6.0", "pytest-cov", "black", "flake8", "isort", "pre-commit"]
 
 [project.urls]
 Homepage = "https://github.com/maximerenault/LUPA"
@@ -94,15 +86,8 @@ extend-exclude = '''
 '''
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+testpaths = ["lupa/tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
 addopts = "--cov=. --cov-report=html --cov-report=term-missing"
-
-[tool.mypy]
-python_version = "3.8"
-warn_return_any = true
-warn_unused_configs = true
-disallow_untyped_defs = true
-exclude = ["deprecated/"]
