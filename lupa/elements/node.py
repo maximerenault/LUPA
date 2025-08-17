@@ -10,13 +10,13 @@ if TYPE_CHECKING:
 @total_ordering
 class Node:
     def __init__(self, x: float, y: float) -> None:
-        self.x = x
-        self.y = y
-        self.elems = []
-        self.id = -1
-        self.radius = 0.05
-        self.probed = False
-        self.probe_name = ""
+        self.x: float = x
+        self.y: float = y
+        self.elems: list[Wire] = []
+        self.id: int = -1
+        self.radius: float = 0.05
+        self.probed: bool = False
+        self.probe_name: str = ""
 
     def getcoords(self) -> np.ndarray:
         return np.array([self.x, self.y])
