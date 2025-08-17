@@ -93,6 +93,15 @@ class FrameSolve(ttk.Frame):
                             "sticky": "ew",
                         },
                     },
+                    "SaveAllCSV": {
+                        "type": "button",
+                        "grid": {
+                            "row": 7,
+                            "column": 0,
+                            "columnspan": 2,
+                            "sticky": "ew",
+                        },
+                    },
                 },
                 "rowcol_weights": {
                     "rows": [],
@@ -136,7 +145,11 @@ class FrameSolve(ttk.Frame):
         self.button_options = {
             "Solve": {"text": "Solve", "bindfunc": self.solve},
             "ExportMat": {"text": "Export matrices", "bindfunc": self.export_matrices},
-            "SaveCSV": {"text": "Save to CSV", "bindfunc": self.save_csv},
+            "SaveCSV": {"text": "Save probed to CSV", "bindfunc": self.save_csv},
+            "SaveAllCSV": {
+                "text": "Save all to CSV",
+                "bindfunc": lambda: self.save_csv(False),
+            },
         }
 
         self.widget_frame = FrameBase(self, {})
@@ -193,23 +206,43 @@ class FrameSolve(ttk.Frame):
         except (UnderconstrainedError, OverconstrainedError) as e:
             tk.messagebox.showerror("Error", str(e))
             return
-        cns = self.csolver.plot_probes()
-        if cns == 1:
+        probes = self.csolver.get_probes()
+        if not probes or not probes.any():
             tk.messagebox.showinfo(
                 "Info",
                 "No probes defined, nothing to plot. "
                 "You can define probes in the Attributes panel.",
             )
+            return
+        probes.plot(
+            self.csolver.solution,
+            self.csolver.get_dt(),
+            self.csolver.get_maxtime(),
+            self.csolver.nbP,
+        )
         return
 
-    def save_csv(self) -> None:
+    def save_csv(self, only_probed=True) -> None:
         """
-        Save the results to a CSV file.
+        Save the probed results to a CSV file.
         """
         main_window = self.master.master
         filename = main_window.filename.split(".")[0] + ".csv"
         try:
-            self.csolver.save_to_csv(filename)
+            probes = self.csolver.get_probes()
+            if not probes or not probes.any():
+                tk.messagebox.showinfo("Info", "No probes to save.")
+                return
+            if only_probed:
+                save_func = probes.save_probed
+            else:
+                save_func = probes.save_full
+            save_func(
+                filename,
+                self.csolver.solution,
+                self.csolver.get_dt(),
+                self.csolver.get_maxtime(),
+            )
             tk.messagebox.showinfo("Success", f"Results saved to {filename}")
         except Exception as e:
             tk.messagebox.showerror("Error", "Failed to save results. " + str(e))

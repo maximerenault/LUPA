@@ -13,9 +13,9 @@ from lupa.core.graphedge import GraphEdge
 from lupa.core.graphnode import GraphNode, GraphNodeType
 from lupa.core.timeintegration import TimeIntegration, get_system_builders
 from lupa.utils.calculator import calculate as calc, deriv_finite_diff as deriv
+from lupa.utils.probes import Probes
 import numpy as np
 from dataclasses import dataclass
-import matplotlib.pyplot as plt
 from enum import Enum
 import copy
 
@@ -54,8 +54,7 @@ class CircuitSolver:
         self.update_M0_dict = {}
         self.update_M1_dict = {}
         self.update_diode_dict: dict[int, DiodeContainer] = {}
-        self.signs = {}
-        self.probed = {}
+        self.probes: Probes = None
 
     def set_dt(self, dt: float) -> None:
         self.dt = dt
@@ -69,6 +68,11 @@ class CircuitSolver:
     def get_maxtime(self) -> float:
         return self.maxtime
 
+    def get_probes(self) -> Probes:
+        if self.probes is None:
+            raise ValueError("Probes have not been built yet. Call solve() first.")
+        return self.probes
+
     def set_time_integration(self, ti: str) -> None:
         try:
             self.time_integration = TimeIntegration(ti)
@@ -77,43 +81,6 @@ class CircuitSolver:
             )
         except ValueError:
             raise ValueError(f"Unknown time integration method: {ti}")
-
-    def export_full_solution(self, fname: str) -> None:
-        names = []
-        for i in range(self.nbP):
-            try:
-                names.append(self.probed[i])
-            except KeyError:
-                names.append("P" + str(i))
-        for i in range(self.nbQ):
-            try:
-                names.append(self.probed[self.nbP + i])
-            except KeyError:
-                names.append("Q" + str(self.nbP + i))
-        np.savetxt(
-            fname,
-            self.solution,
-            fmt="%.11g",
-            delimiter=" ",
-            newline="\n",
-            header=" ".join(names),
-            footer="",
-            comments="# ",
-            encoding=None,
-        )
-
-    def export_probed_solution(self, fname: str) -> None:
-        np.savetxt(
-            fname,
-            self.solution[[i for i in self.probed.keys()]],
-            fmt="%.11g",
-            delimiter=" ",
-            newline="\n",
-            header=" ".join([self.probed[i] for i in self.probed.keys()]),
-            footer="",
-            comments="# ",
-            encoding=None,
-        )
 
     def solve(
         self,
@@ -140,7 +107,7 @@ class CircuitSolver:
             copy.deepcopy(startends),
         )
         self.check_no_solution(nbP, nbQ, paths, startends)
-        self.probed, self.signs = self.set_probes(nodes, paths, startends)
+        self.probes = Probes.build(nodes, paths, startends)
 
         time = 0.0
         step = 0
@@ -185,8 +152,7 @@ class CircuitSolver:
                     self.solution[:, step + 1] = np.linalg.solve(self.LHS, self.RHS)
             step += 1
 
-        for key in self.signs.keys():
-            self.solution[key] *= self.signs[key]
+        return None
 
     def build_M0M1(
         self, nbP: int, paths: list[list[GraphEdge]], startends: list[list[int]]
@@ -488,89 +454,3 @@ class CircuitSolver:
                 if startend[1] > i:
                     startend[1] -= 1
         return nodes, paths, startends
-
-    def set_probes(
-        self,
-        nodes: list[GraphNode],
-        paths: list[list[GraphEdge]],
-        startends: list[list[int]],
-    ) -> tuple[dict, dict]:
-        """
-        Set the probes for the nodes and edges.
-        """
-        probed = {}
-        signs = {}
-        for i, node in enumerate(nodes):
-            if node.probed:
-                probed[i] = node.probe_name
-        for i, path in enumerate(paths):
-            startend = startends[i]
-            idP0 = startend[0]
-            for edge in path:
-                if idP0 == edge.start:
-                    idP1 = edge.end
-                    sign = 1
-                else:
-                    idP1 = edge.start
-                    sign = -1
-                if isinstance(edge.elem, Ground):
-                    idP1 = edge.start
-                if edge.elem.probed != 0:
-                    signs[len(nodes) + i] = sign * edge.elem.probed
-                    probed[len(nodes) + i] = edge.elem.probe_name
-                idP0 = idP1
-        return probed, signs
-
-    def plot_probes(self) -> int:
-        """
-        Plot the probes defined in the circuit.
-        """
-        if not self.probed:
-            return 1
-
-        _, axs = plt.subplots(2)
-        with_p = False
-        with_q = False
-        for key in self.probed.keys():
-            if key < self.nbP:
-                axs[0].plot(
-                    np.linspace(0, self.maxtime, self.solution.shape[1]),
-                    self.solution[key],
-                    label=self.probed[key],
-                )
-                with_p = True
-            else:
-                axs[1].plot(
-                    np.linspace(0, self.maxtime, self.solution.shape[1]),
-                    self.solution[key],
-                    label=self.probed[key],
-                )
-                with_q = True
-        if with_p:
-            axs[0].set_xlabel("Time")
-            axs[0].set_ylabel("Pressure")
-            axs[0].legend()
-        if with_q:
-            axs[1].set_xlabel("Time")
-            axs[1].set_ylabel("Flow")
-            axs[1].legend()
-        plt.suptitle("Circuit Solver Probes")
-        plt.tight_layout()
-        plt.show()
-        return 0
-
-    def save_to_csv(self, filename: str) -> None:
-        """
-        Save the circuit solver's probed solution to a CSV file.
-        """
-        with open(filename, "w") as f:
-            f.write("Time," + ",".join(self.probed.values()) + "\n")
-            for i in range(self.solution.shape[1]):
-                f.write(
-                    str(i * self.dt)
-                    + ","
-                    + ",".join(
-                        [str(self.solution[key, i]) for key in self.probed.keys()]
-                    )
-                    + "\n"
-                )
