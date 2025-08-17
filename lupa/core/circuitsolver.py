@@ -10,14 +10,13 @@ from lupa.elements.psource import PSource
 from lupa.elements.qsource import QSource
 from lupa.elements.resistor import Resistor
 from lupa.core.graphedge import GraphEdge
-from lupa.core.graphnode import GraphNode, GraphNodeType
+from lupa.core.graphnode import GraphNode
 from lupa.core.timeintegration import TimeIntegration, get_system_builders
 from lupa.utils.calculator import calculate as calc, deriv_finite_diff as deriv
 from lupa.utils.probes import Probes
 import numpy as np
 from dataclasses import dataclass
 from enum import Enum
-import copy
 
 DIODE_RESISTOR_SUBSTITUTE = 0.1
 
@@ -101,11 +100,6 @@ class CircuitSolver:
         - builds LHS
         - solves LHS.x = RHS at each timestep
         """
-        nodes, paths, startends = self.delete_node_sources(
-            copy.deepcopy(nodes),
-            copy.deepcopy(paths),
-            copy.deepcopy(startends),
-        )
         self.check_no_solution(nbP, nbQ, paths, startends)
         self.probes = Probes.build(nodes, paths, startends)
 
@@ -412,45 +406,3 @@ class CircuitSolver:
             raise OverconstrainedError(c, nbP + nbQ)
         elif c < nbP + nbQ:
             raise UnderconstrainedError(c, nbP + nbQ)
-
-    def delete_node_sources(
-        self,
-        nodes: list[GraphNode],
-        paths: list[list[GraphEdge]],
-        startends: list[list[int]],
-    ) -> tuple[list[GraphNode], list[list[GraphEdge]], list[list[int]]]:
-        """
-        Method to remove annoying Source nodes that were
-        used previously to define correctly the graph.
-
-        Since they are no use to build the system (as they provide the
-        same pressure as the node on the other side of the edge) we
-        remove them and update edges accordingly.
-        """
-        rem = []
-        for i, node in enumerate(nodes):
-            if node.type == GraphNodeType.SOURCE:
-                rem.append(i)
-        rem.reverse()
-        for i in rem:
-            del nodes[i]
-            for path in paths:
-                for edge in path:
-                    if edge.start == i:
-                        edge.start = -1
-                    if edge.end == i:
-                        edge.end = -1
-                    if edge.start > i:
-                        edge.start -= 1
-                    if edge.end > i:
-                        edge.end -= 1
-            for startend in startends:
-                if startend[0] == i:
-                    startend[0] = -1
-                if startend[1] == i:
-                    startend[1] = -1
-                if startend[0] > i:
-                    startend[0] -= 1
-                if startend[1] > i:
-                    startend[1] -= 1
-        return nodes, paths, startends

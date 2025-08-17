@@ -16,11 +16,21 @@ class CircuitGraph:
         direction, but they keep their direction to facilitate the next steps.
         """
         self.nodes, self.edges = self.convert_circuit_to_graph(cnodes, celems)
-        self.Paths, self.StartEnds = self.graph_max_len_non_branching_paths()
+        self.paths, self.start_ends = self.graph_max_len_non_branching_paths()
+        self.delete_node_sources()
 
     def convert_circuit_to_graph(
         self, cnodes: list[Node], celems: list[Wire]
     ) -> tuple[list[GraphNode], list[GraphEdge]]:
+        """
+        We construct a graph from the geometrical nodes (cnodes) and elements (celems).
+        Based on the cnodes positions and the elements they contain, we create
+        a list of GraphNode and GraphEdge objects.
+
+        A GraphNode contains a list of GraphEdge objects to which it is connected.
+        A GraphEdge contains the start and end node indices and the element it
+        represents.
+        """
         cnodes = sorted(cnodes)
         nodes: list[GraphNode] = []
         edges: list[GraphEdge] = []
@@ -32,19 +42,20 @@ class CircuitGraph:
             subcnodes = cnodes[0:idend]
             del cnodes[0:idend]
 
-            nodes.append(GraphNode())
+            newnode = GraphNode()
+            nodes.append(newnode)
             idnode = len(nodes) - 1
 
             for cnode in subcnodes:
                 if cnode.probed:
-                    nodes[-1].probed = True
-                    nodes[-1].probe_name = cnode.probe_name
+                    newnode.probed = True
+                    newnode.probe_name = cnode.probe_name
                 celem = cnode.elems[0]
                 if type(celem) is Wire:
                     # if we reach a wire, we collapse it
                     otherend = celem.get_other_end(cnode)
                     if otherend.probed:
-                        nodes[-1].probed = True
+                        newnode.probed = True
                     idstart = bisect_left(cnodes, otherend)
                     idend = bisect_right(cnodes, otherend)
                     # we prevent going back through the same wire by removing the node.
@@ -58,9 +69,10 @@ class CircuitGraph:
                     del cnodes[idstart : idend - 1]
                 else:
                     # for other elements we save the position of the node
-                    edgedict[celem][celem.get_node_id(cnode)] = idnode
-                    if isinstance(celem, Ground) and celem.get_node_id(cnode) == 1:
-                        nodes[-1].set_type(GraphNodeType.SOURCE)
+                    idn = celem.get_node_id(cnode)
+                    edgedict[celem][idn] = idnode
+                    if isinstance(celem, Ground) and idn == 1:
+                        newnode.set_type(GraphNodeType.SOURCE)
 
         for celem in celems:
             if type(celem) is not Wire:
@@ -88,64 +100,100 @@ class CircuitGraph:
 
         Also returns start and end of each path.
         """
-        Paths = []
-        StartEnds = []
+        paths: list[list[GraphEdge]] = []
+        start_ends: list[list[int]] = []
         for i, node in enumerate(self.nodes):
             if len(node.edges) == 2:
                 continue
             for edge in node.edges:
-                startend = []
-                startend.append(i)
-                non_branching_path = []
+                non_branching_path: list[GraphEdge] = []
                 non_branching_path.append(edge)
-                if edge.start != i:
-                    i1 = edge.start
+                if edge.start == i:
+                    j = edge.end
                 else:
-                    i1 = edge.end
-                node1 = self.nodes[i1]
+                    j = edge.start
+                node1 = self.nodes[j]
                 prevedge = edge
-                k = 0
                 while len(node1.edges) == 2:
                     for e in node1.edges:
                         if prevedge is not e:
                             non_branching_path.append(e)
                             break
                     prevedge = non_branching_path[-1]
-                    if prevedge.start != i1:
-                        i1 = prevedge.start
+                    if prevedge.start != j:
+                        j = prevedge.start
                     else:
-                        i1 = prevedge.end
-                    node1 = self.nodes[i1]
-                    k += 1
-                    if k == 10000:
-                        print("Error in branching path ", node1)
-                        return
-                startend.append(i1)
-                Paths.append(non_branching_path)
-                StartEnds.append(startend)
+                        j = prevedge.end
+                    node1 = self.nodes[j]
+                startend = [i, j]
+                paths.append(non_branching_path)
+                start_ends.append(startend)
         # Delete duplicates
         rem = []
-        for i in range(len(Paths)):
-            path = Paths[i]
+        for i in range(len(paths)):
+            path = paths[i]
             path.reverse()
-            if path in Paths[i + 1 :]:
+            if path in paths[i + 1 :]:
                 rem.append(i)
         rem.reverse()
         for i in rem:
-            del Paths[i]
-            del StartEnds[i]
-        for path in Paths:
+            del paths[i]
+            del start_ends[i]
+        for path in paths:
             path.reverse()
-        return Paths, StartEnds
+        return paths, start_ends
+
+    def delete_node_sources(
+        self,
+    ) -> None:
+        """
+        Method to remove annoying Source nodes that were
+        used previously to define correctly the graph.
+
+        Since they are no use to build the system (as they provide the
+        same pressure as the node on the other side of the edge) we
+        remove them and update edges accordingly.
+
+        Results in "headless" edges that are connected to only one node,
+        the other being -1.
+        """
+        rem = []
+        for i, node in enumerate(self.nodes):
+            if node.type == GraphNodeType.SOURCE:
+                rem.append(i)
+        rem.reverse()
+        for i in rem:
+            del self.nodes[i]
+            for path in self.paths:
+                for edge in path:
+                    if edge.start == i:
+                        edge.start = -1
+                    if edge.end == i:
+                        edge.end = -1
+                    if edge.start > i:
+                        edge.start -= 1
+                    if edge.end > i:
+                        edge.end -= 1
+            for startend in self.start_ends:
+                if startend[0] == i:
+                    startend[0] = -1
+                if startend[1] == i:
+                    startend[1] = -1
+                if startend[0] > i:
+                    startend[0] -= 1
+                if startend[1] > i:
+                    startend[1] -= 1
 
     def get_nbQ(self) -> int:
         """
-        Returns the number of source nodes in the graph.
+        Returns the number of flow unknowns in the graph.
+        This is the number of paths in the graph.
         """
-        return len(self.Paths)
+        return len(self.paths)
 
     def get_nbP(self) -> int:
         """
-        Returns the number of non-source nodes in the graph.
+        Returns the number of pressure unknowns in the graph.
+        This is the number of nodes in the graph.
         """
-        return len([n for n in self.nodes if n.type != GraphNodeType.SOURCE])
+        return len(self.nodes)

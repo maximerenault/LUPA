@@ -200,7 +200,7 @@ class FrameSolve(ttk.Frame):
         nbP = cgraph.get_nbP()
         try:
             ts = time.time()
-            self.csolver.solve(nbP, nbQ, cgraph.nodes, cgraph.Paths, cgraph.StartEnds)
+            self.csolver.solve(nbP, nbQ, cgraph.nodes, cgraph.paths, cgraph.start_ends)
             te = time.time()
             print(f"Solved in {te - ts:.2f} seconds")
         except (UnderconstrainedError, OverconstrainedError) as e:
