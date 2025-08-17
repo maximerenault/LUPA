@@ -5,7 +5,6 @@ from lupa.exceptions.calculatorexceptions import (
     UnexpectedCharacterError,
     BadNumberError,
     BadFunctionError,
-    WrongArgsLenError,
     UnexpectedEndError,
 )
 
@@ -73,13 +72,6 @@ class TestCalculator(unittest.TestCase):
             calculate("2 + (3 * 4")
         with self.assertRaises(UnexpectedCharacterError):
             calculate("3 + * 2")
-
-    def test_wrong_args_length(self):
-        expr = calculate("t + 1")
-        with self.assertRaises(WrongArgsLenError):
-            expr(1, 2)
-        with self.assertRaises(WrongArgsLenError):
-            expr()
 
 
 if __name__ == "__main__":

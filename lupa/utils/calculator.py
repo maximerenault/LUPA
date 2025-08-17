@@ -66,7 +66,6 @@ from lupa.exceptions.calculatorexceptions import (
     BadNumberError,
     BadFunctionError,
     BadConstantError,
-    WrongArgsLenError,
     UnexpectedEndError,
     ReadOnlyError,
 )
@@ -590,13 +589,7 @@ class Parser(BaseParser):
         for var in self._take(lambda t: t in self.calc.variables):
             if var not in self.vars:
                 self.vars.append(var)
-
-            def lambd(*args):
-                if len(args) != len(self.vars):
-                    raise WrongArgsLenError(len(args), len(self.vars))
-                return args[self.vars.index(var)]
-
-            return lambd
+            return lambda *args: args[self.vars.index(var)]
 
         for sign in self._take(lambda t: t in "+-"):
             value = self._parse_factor()

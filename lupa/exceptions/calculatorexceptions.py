@@ -32,11 +32,6 @@ class UnexpectedEndError(CalculatorException):
         super().__init__(f"found end, but expected: {repr(expected)}")
 
 
-class WrongArgsLenError(CalculatorException):
-    def __init__(self, got: int, expected: int) -> None:
-        super().__init__(f"got {got} arguments, but expected {expected}")
-
-
 class ReadOnlyError(CalculatorException):
     def __init__(self, name: str) -> None:
         super().__init__(f"cannot modify read-only variable: {name}")
