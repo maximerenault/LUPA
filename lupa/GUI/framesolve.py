@@ -7,6 +7,7 @@ from lupa.exceptions.circuitsolverexceptions import (
     UnderconstrainedError,
     OverconstrainedError,
 )
+import time
 from lupa.core.circuitgraph import CircuitGraph
 from lupa.core.circuitsolver import CircuitSolver
 from lupa.core.timeintegration import TimeIntegration
@@ -182,13 +183,13 @@ class FrameSolve(ttk.Frame):
             tk.messagebox.showerror("Error", "No system to solve")
             return
         cgraph = CircuitGraph(self.drbd.cgeom.nodes, self.drbd.cgeom.elems)
-
-        # Solving operations
-        Paths, StartEnds = cgraph.graph_max_len_non_branching_paths()
-        nbQ = len(Paths)
-        nbP = len([n for n in cgraph.nodes if n.type != "Source"])
+        nbQ = cgraph.get_nbQ()
+        nbP = cgraph.get_nbP()
         try:
-            self.csolver.solve(nbP, nbQ, cgraph.nodes, Paths, StartEnds)
+            ts = time.time()
+            self.csolver.solve(nbP, nbQ, cgraph.nodes, cgraph.Paths, cgraph.StartEnds)
+            te = time.time()
+            print(f"Solved in {te - ts:.2f} seconds")
         except (UnderconstrainedError, OverconstrainedError) as e:
             tk.messagebox.showerror("Error", str(e))
             return

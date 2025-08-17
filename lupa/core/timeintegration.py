@@ -9,6 +9,136 @@ class TimeIntegration(Enum):
     BDF3 = "BDF3"
 
 
+def build_LHS_BDF(D: np.ndarray, K: np.ndarray, dt: float) -> np.ndarray:
+    """
+    Build left hand side of the equation.
+
+    Args:
+        D (np.ndarray): damping matrix
+        K (np.ndarray): stiffness matrix
+        dt (float): timestep
+    Returns:
+        np.ndarray: left hand side matrix
+    """
+    return K + D / dt
+
+
+def build_LHS_BDF2(D: np.ndarray, K: np.ndarray, dt: float) -> np.ndarray:
+    """
+    Build left hand side of the equation.
+
+    Args:
+        D (np.ndarray): damping matrix
+        K (np.ndarray): stiffness matrix
+        dt (float): timestep
+    Returns:
+        np.ndarray: left hand side matrix
+    """
+    return K + 3 / (2 * dt) * D
+
+
+def build_LHS_BDF3(D: np.ndarray, K: np.ndarray, dt: float) -> np.ndarray:
+    """
+    Build left hand side of the equation.
+
+    Args:
+        D (np.ndarray): damping matrix
+        K (np.ndarray): stiffness matrix
+        dt (float): timestep
+    Returns:
+        np.ndarray: left hand side matrix
+    """
+    return K + 11 / (6 * dt) * D
+
+
+def build_RHS_BDF(
+    D: np.ndarray,
+    F: np.ndarray,
+    dt: float,
+    step: int,
+    x: np.ndarray,
+) -> np.ndarray:
+    """
+    Build right hand side of the equation.
+
+    Args:
+        D (np.ndarray): damping matrix
+        F (np.ndarray): source vector
+        dt (float): timestep
+        step (int): current time step
+        x (np.ndarray): solution vectors at all steps
+    Returns:
+        np.ndarray: right hand side vector
+    """
+    return F + D @ (x[:, step] / dt)
+
+
+def build_RHS_BDF2(
+    D: np.ndarray,
+    F: np.ndarray,
+    dt: float,
+    step: int,
+    x: np.ndarray,
+) -> np.ndarray:
+    """
+    Build right hand side of the equation.
+
+    Args:
+        D (np.ndarray): damping matrix
+        F (np.ndarray): source vector
+        dt (float): timestep
+        step (int): current time step
+        x (np.ndarray): solution vectors at all steps
+    Returns:
+        np.ndarray: right hand side vector
+    """
+    return F + D @ ((4 * x[:, step] - x[:, step - 1]) / (2 * dt))
+
+
+def build_RHS_BDF3(
+    D: np.ndarray,
+    F: np.ndarray,
+    dt: float,
+    step: int,
+    x: np.ndarray,
+) -> np.ndarray:
+    """
+    Build right hand side of the equation.
+
+    Args:
+        D (np.ndarray): damping matrix
+        F (np.ndarray): source vector
+        dt (float): timestep
+        step (int): current time step
+        x (np.ndarray): solution vectors at all steps
+    Returns:
+        np.ndarray: right hand side vector
+    """
+    return F + D @ (
+        (18 * x[:, step] - 9 * x[:, step - 1] + 2 * x[:, step - 2]) / (6 * dt)
+    )
+
+
+def get_system_builders(ti: TimeIntegration) -> tuple[Callable, Callable]:
+    """
+    Get the appropriate LHS and RHS builders based on the time integration method.
+
+    Args:
+        ti (TimeIntegration): Time integration method
+
+    Returns:
+        tuple: (LHS builder function, RHS builder function)
+    """
+    if ti == TimeIntegration.BDF:
+        return build_LHS_BDF, build_RHS_BDF
+    elif ti == TimeIntegration.BDF2:
+        return build_LHS_BDF2, build_RHS_BDF2
+    elif ti == TimeIntegration.BDF3:
+        return build_LHS_BDF3, build_RHS_BDF3
+    else:
+        raise ValueError(f"Unknown time integration method: {ti}")
+
+
 def generalized_alpha_step(
     M: np.ndarray,
     D: np.ndarray,

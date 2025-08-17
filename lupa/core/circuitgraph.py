@@ -2,7 +2,7 @@ from lupa.elements.node import Node
 from lupa.elements.wire import Wire
 from lupa.elements.ground import Ground
 from lupa.core.graphedge import GraphEdge
-from lupa.core.graphnode import GraphNode
+from lupa.core.graphnode import GraphNode, GraphNodeType
 from bisect import bisect_left, bisect_right
 
 
@@ -16,12 +16,14 @@ class CircuitGraph:
         direction, but they keep their direction to facilitate the next steps.
         """
         self.nodes, self.edges = self.convert_circuit_to_graph(cnodes, celems)
+        self.Paths, self.StartEnds = self.graph_max_len_non_branching_paths()
 
     def convert_circuit_to_graph(
         self, cnodes: list[Node], celems: list[Wire]
     ) -> tuple[list[GraphNode], list[GraphEdge]]:
         cnodes = sorted(cnodes)
-        nodes, edges = [], []
+        nodes: list[GraphNode] = []
+        edges: list[GraphEdge] = []
         edgedict = {celem: [-1, -1] for celem in celems if type(celem) is not Wire}
 
         while len(cnodes) > 0:
@@ -58,7 +60,7 @@ class CircuitGraph:
                     # for other elements we save the position of the node
                     edgedict[celem][celem.get_node_id(cnode)] = idnode
                     if isinstance(celem, Ground) and celem.get_node_id(cnode) == 1:
-                        nodes[-1].set_type("Source")
+                        nodes[-1].set_type(GraphNodeType.SOURCE)
 
         for celem in celems:
             if type(celem) is not Wire:
@@ -89,37 +91,38 @@ class CircuitGraph:
         Paths = []
         StartEnds = []
         for i, node in enumerate(self.nodes):
-            if len(node.edges) != 2:
-                for edge in node.edges:
-                    startend = []
-                    startend.append(i)
-                    non_branching_path = []
-                    non_branching_path.append(edge)
-                    if edge.start != i:
-                        i1 = edge.start
+            if len(node.edges) == 2:
+                continue
+            for edge in node.edges:
+                startend = []
+                startend.append(i)
+                non_branching_path = []
+                non_branching_path.append(edge)
+                if edge.start != i:
+                    i1 = edge.start
+                else:
+                    i1 = edge.end
+                node1 = self.nodes[i1]
+                prevedge = edge
+                k = 0
+                while len(node1.edges) == 2:
+                    for e in node1.edges:
+                        if prevedge is not e:
+                            non_branching_path.append(e)
+                            break
+                    prevedge = non_branching_path[-1]
+                    if prevedge.start != i1:
+                        i1 = prevedge.start
                     else:
-                        i1 = edge.end
+                        i1 = prevedge.end
                     node1 = self.nodes[i1]
-                    prevedge = edge
-                    k = 0
-                    while len(node1.edges) == 2:
-                        for e in node1.edges:
-                            if prevedge is not e:
-                                non_branching_path.append(e)
-                                break
-                        prevedge = non_branching_path[-1]
-                        if prevedge.start != i1:
-                            i1 = prevedge.start
-                        else:
-                            i1 = prevedge.end
-                        node1 = self.nodes[i1]
-                        k += 1
-                        if k == 10000:
-                            print("Error in branching path ", node1)
-                            return
-                    startend.append(i1)
-                    Paths.append(non_branching_path)
-                    StartEnds.append(startend)
+                    k += 1
+                    if k == 10000:
+                        print("Error in branching path ", node1)
+                        return
+                startend.append(i1)
+                Paths.append(non_branching_path)
+                StartEnds.append(startend)
         # Delete duplicates
         rem = []
         for i in range(len(Paths)):
@@ -134,3 +137,15 @@ class CircuitGraph:
         for path in Paths:
             path.reverse()
         return Paths, StartEnds
+
+    def get_nbQ(self) -> int:
+        """
+        Returns the number of source nodes in the graph.
+        """
+        return len(self.Paths)
+
+    def get_nbP(self) -> int:
+        """
+        Returns the number of non-source nodes in the graph.
+        """
+        return len([n for n in self.nodes if n.type != GraphNodeType.SOURCE])
